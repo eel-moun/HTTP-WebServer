@@ -29,7 +29,7 @@ class Server{
         void    setHost(string ip);
         void    setServerName(string name);
         void    setErrorPage(string path,unsigned int index);
-        void    setLocation(Location &local);
+        void    setLocation();
         string  getListen() const;
         string  getHost() const;
         string  getServerName() const;

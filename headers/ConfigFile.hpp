@@ -17,6 +17,6 @@ class ConfigFile{
         ConfigFile& operator=(const ConfigFile& rhs);
 
         Server getServer(size_t index) const;
-        void setServer(Server &srv);
+        void setServer();
         size_t getSize() const;
 };

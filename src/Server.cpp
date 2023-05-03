@@ -71,7 +71,8 @@ void Server::setErrorPage(string path, unsigned int index){
     }
 }
 
-void Server::setLocation(Location &local){
+void Server::setLocation(){
+    Location local;
     locations.push_back(local);
     size++;
 }

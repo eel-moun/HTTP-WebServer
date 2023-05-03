@@ -32,7 +32,8 @@ size_t ConfigFile::getSize() const{
     return (size);
 }
 
-void ConfigFile::setServer(Server &srv){
+void ConfigFile::setServer(){
+    Server srv;
     servers.push_back(srv);
     size++;
 }
