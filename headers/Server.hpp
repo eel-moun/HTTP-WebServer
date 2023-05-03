@@ -15,12 +15,15 @@ class Server{
         string error_page404;
         string error_page500;
         string error_page501;
-        vector<Location> locations;
         size_t size;
+        vector<Location> locations;
     
     public:
         Server();
+        Server(const Server& other);
         ~Server();
+
+        Server& operator=(const Server& ths);
 
         void    setListen(string port);
         void    setHost(string ip);

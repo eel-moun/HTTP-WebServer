@@ -10,7 +10,10 @@ class Location{
     
     public:
         Location();
+        Location(const Location& other);
         ~Location();
+
+        Location& operator=(const Location& rhs);
 
         void setPath(string path);
         void setIndex(string index);

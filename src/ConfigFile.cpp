@@ -5,6 +5,18 @@ ConfigFile::ConfigFile(){
     size = 0;
 }
 
+ConfigFile::ConfigFile(const ConfigFile& other)
+{
+    cout << "ConfigFile copy constructor called" << endl;
+    *this = other;
+}
+
+ConfigFile& ConfigFile::operator=(const ConfigFile& rhs)
+{
+    this->size = rhs.size;
+    this->servers = rhs.servers;
+}
+
 ConfigFile::~ConfigFile(){
     cout << "ConfigFile destructor called" << endl;
     servers.clear();
