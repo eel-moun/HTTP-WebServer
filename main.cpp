@@ -1,34 +1,52 @@
 #include "iostream"
-#include "fcntl.h"
+#include <string>
+#include <fstream>
+#include <exception>
+#include "headers/ConfigFile.hpp"
+
 using namespace std;
+#define DEFAULT_PATH "./config/default"
 
-int	checkConfigFile(int ac, char **av)
+ifstream& openFileStream(int ac ,char **av)
 {
-	int fd;
-
     if (ac > 2)
-        return (cout << "enter the correct number of argument\n", -1);
+        throw invalid_argument("arguments  > 2");
     else if (ac == 2)
     {
-        fd = open(av[1], O_RDONLY);
-        if (fd == -1)
-            return (cout << "error in opening config file\n", -1);
+        ifstream conf_file(static_cast<string>(av[1]));
+        if (!conf_file)
+            return (cout << "error in opening config file\n", conf_file);
+        return conf_file;
     }
 	else
 	{
-		fd = open("default/nginx.conf", O_RDONLY);
-		if (fd == -1)
-            return (cout << "error in opening default config file\n", -1);
+		ifstream conf_file(static_cast<string>(DEFAULT_PATH));
+		if (!conf_file)
+            return (cout << "error in opening default config file\n", conf_file);
+        return(conf_file);
 	}
-	return (fd);
+}
+
+int	checkConfigFile(int ac, char **av, ConfigFile& config)
+{
+    ifstream &conf_file = openFileStream(ac ,av);
+	parseConfig(conf_file, config);
+}
+
+string parseConfig(ifstream& conf_file, ConfigFile& config)
+{
+    string line;
+
+    while (getline(conf_file, line, '\n'))
+    {
+
+    }
 }
 
 int main(int ac, char **av)
 {
-    int fd;
+    ConfigFile  config();
+    checkConfigFile(ac, av, config);
 
-    if (checkConfigFile(ac, av) == -1)
-		return (-1);
-
-	
+    return (0);
 }

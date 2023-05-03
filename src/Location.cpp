@@ -8,6 +8,19 @@ Location::~Location(){
     cout << "Location Destructor called" << endl;
 }
 
+Location::Location(const Location& other)
+{
+    cout << "Location copy constructor called" << endl;
+    *this = other;
+}
+
+Location&   Location::operator=(const Location& rhs)
+{
+    cout << "Location copy assignment operator called" << endl;
+    this->path = rhs.path;
+    this->index = rhs.index;
+}
+
 void Location::setPath(string path){
     this->path = path;
 }

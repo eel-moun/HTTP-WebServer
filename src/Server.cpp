@@ -5,6 +5,28 @@ Server::Server(){
     size = 0;
 }
 
+Server::Server(const Server& other)
+{
+    cout << "Server copy constructor called" << endl;
+    *this = other;
+}
+
+Server& Server::operator=(const Server& rhs)
+{
+    cout << "Server copy assignment operator called" << endl;
+    this->listen = rhs.listen;
+    this->host = rhs.host;
+    this->server_name = rhs.server_name;
+    this->error_page400 = rhs.error_page400;
+    this->error_page402 = rhs.error_page403;
+    this->error_page403 = rhs.error_page403;
+    this->error_page404 = rhs.error_page404;
+    this->error_page500 = rhs.error_page500;
+    this->error_page501 = rhs.error_page501;
+    this->size = rhs.size;
+    this->locations = rhs.locations;
+}
+
 Server::~Server(){
     cout << "Server default destructor called " << endl;
     locations.clear();
