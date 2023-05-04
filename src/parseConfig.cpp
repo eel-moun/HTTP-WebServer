@@ -4,7 +4,7 @@
 /*int	checkConfigFile(int ac, char **av, ConfigFile& config)
 {
     ifstream &conf_file = openFileStream(ac ,av);
-	//parseConfig(conf_file, config);
+	parseConfig(conf_file);
 }*/
 
 int keyValue(string line, ConfigFile& config)
