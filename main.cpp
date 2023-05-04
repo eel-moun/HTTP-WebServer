@@ -39,6 +39,8 @@ string parseConfig(ifstream& conf_file, ConfigFile& config)
     }
 }
 
+// hello mother fucker
+
 int main(int ac, char **av)
 {
     ConfigFile  config;
