@@ -1,7 +1,8 @@
-#include <iostream>
-#include <vector>
-#include <exception>
+#ifndef CONFIGFILE_HPP
+#define CONFIGFILE_HPP
+
 #include "Server.hpp"
+#include <exception>
 
 using namespace std;
 
@@ -17,6 +18,7 @@ class ConfigFile{
         //ConfigFile& operator=(const ConfigFile& rhs);
 
         Server getServer(size_t index) const;
-        void setServer(Server &srv);
+        void setServer();
         size_t getSize() const;
 };
+#endif

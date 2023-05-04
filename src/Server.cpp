@@ -25,6 +25,7 @@ Server& Server::operator=(const Server& rhs)
     this->error_page501 = rhs.error_page501;
     this->size = rhs.size;
     this->locations = rhs.locations;
+    return *this;
 }
 
 Server::~Server(){
@@ -71,7 +72,8 @@ void Server::setErrorPage(string path, unsigned int index){
     }
 }
 
-void Server::setLocation(Location &local){
+void Server::setLocation(){
+    Location local;
     locations.push_back(local);
     size++;
 }
@@ -110,7 +112,7 @@ string Server::getErrorPage(unsigned int index) const{
 }
 
 Location Server::getLocation(size_t index) const{
-    if (index > size)
+    if (index >= size)
         throw out_of_range("Server::getLocation");
     return locations[index];
 }

@@ -1,5 +1,5 @@
-#include <iostream>
-#include <vector>
+#ifndef SERVER_HPP
+#define SERVER_HPP
 #include "Location.hpp"
 
 using namespace std;
@@ -29,7 +29,7 @@ class Server{
         void    setHost(string ip);
         void    setServerName(string name);
         void    setErrorPage(string path,unsigned int index);
-        void    setLocation(Location &local);
+        void    setLocation();
         string  getListen() const;
         string  getHost() const;
         string  getServerName() const;
@@ -38,3 +38,5 @@ class Server{
         size_t      getSize()const;
 
 };
+
+#endif

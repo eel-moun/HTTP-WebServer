@@ -15,6 +15,7 @@ ConfigFile& ConfigFile::operator=(const ConfigFile& rhs)
 {
     this->size = rhs.size;
     this->servers = rhs.servers;
+    return *this;
 }
 
 ConfigFile::~ConfigFile(){
@@ -23,7 +24,7 @@ ConfigFile::~ConfigFile(){
 }
 
 Server ConfigFile::getServer(size_t index) const{
-    if (index > size)
+    if (index >= size)
         throw out_of_range("ConfigFile::getServer");
     return(servers[index]);
 }
@@ -32,7 +33,8 @@ size_t ConfigFile::getSize() const{
     return (size);
 }
 
-void ConfigFile::setServer(Server &srv){
+void ConfigFile::setServer(){
+    Server srv;
     servers.push_back(srv);
     size++;
 }

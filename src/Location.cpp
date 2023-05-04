@@ -19,6 +19,7 @@ Location&   Location::operator=(const Location& rhs)
     cout << "Location copy assignment operator called" << endl;
     this->path = rhs.path;
     this->index = rhs.index;
+    return *this;
 }
 
 void Location::setPath(string path){
