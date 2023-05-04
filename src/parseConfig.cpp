@@ -1,19 +1,12 @@
 #include "../headers/parseConfig.hpp"
 
 
-/*int	checkConfigFile(int ac, char **av, ConfigFile& config)
-{
-    ifstream &conf_file = openFileStream(ac ,av);
-	parseConfig(conf_file);
-}*/
-
 int keyValue(string line, ConfigFile& config)
 {
     size_t delimiterPos;
     string key;
     string value;
 
-    // removeWS(line);
     if(!line.size())
         return(0);
     delimiterPos = line.find(" ");
