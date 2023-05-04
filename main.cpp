@@ -1,6 +1,9 @@
 #include "./headers/parseConfig.hpp"
 
-int	checkConfigFile(int ac, char **av, ConfigFile& config)
+using namespace std;
+#define DEFAULT_PATH "./config/default"
+
+void	checkConfigFile(int ac, char **av, ConfigFile& config)
 {
     ifstream conf_file = openFileStream(ac ,av);
 	parseConfig(conf_file, config);

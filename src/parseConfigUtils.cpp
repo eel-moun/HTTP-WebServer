@@ -6,22 +6,28 @@ void rmSpaces(string& line)
         line.erase(0,1);
 }
 
-ifstream openFileStream(int ac ,char **av)
+ifstream& openFileStream(int ac ,char **av)
 {
     if (ac > 2)
         throw invalid_argument("arguments  > 2");
     else if (ac == 2)
     {
-        ifstream conf_file(static_cast<string>(av[1]));
-        if (!conf_file)
+        ifstream* conf_file = new ifstream(static_cast<string>(av[1]));
+        if (!*conf_file)
+        {
+            delete conf_file;
             throw runtime_error("error in opening config file");
-        return conf_file;
+        }
+        return *conf_file;
     }
 	else
 	{
-		ifstream conf_file(static_cast<string>(DEFAULT_PATH));
-		if (!conf_file)
+		ifstream* conf_file = new ifstream(static_cast<string>(DEFAULT_PATH));
+		if (!*conf_file)
+        {
+            delete conf_file;
             throw runtime_error("error in opening config file");
-        return(conf_file);
+        }
+        return (*conf_file);
 	}
 }
