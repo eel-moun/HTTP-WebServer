@@ -15,6 +15,7 @@ ConfigFile& ConfigFile::operator=(const ConfigFile& rhs)
 {
     this->size = rhs.size;
     this->servers = rhs.servers;
+    return *this;
 }
 
 ConfigFile::~ConfigFile(){

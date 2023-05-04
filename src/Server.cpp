@@ -25,6 +25,7 @@ Server& Server::operator=(const Server& rhs)
     this->error_page501 = rhs.error_page501;
     this->size = rhs.size;
     this->locations = rhs.locations;
+    return *this;
 }
 
 Server::~Server(){

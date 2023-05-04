@@ -1,3 +1,5 @@
+#ifndef LOCATION_HPP
+#define LOCATION_HPP
 #include <iostream>
 #include <vector>
 
@@ -20,3 +22,4 @@ class Location{
         string getPath() const;
         string getIndex() const;
 };
+#endif

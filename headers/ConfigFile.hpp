@@ -1,7 +1,8 @@
-#include <iostream>
-#include <vector>
-#include <exception>
+#ifndef CONFIGFILE_HPP
+#define CONFIGFILE_HPP
+
 #include "Server.hpp"
+#include <exception>
 
 using namespace std;
 
@@ -20,3 +21,4 @@ class ConfigFile{
         void setServer();
         size_t getSize() const;
 };
+#endif

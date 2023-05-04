@@ -1,5 +1,5 @@
-#include <iostream>
-#include <vector>
+#ifndef SERVER_HPP
+#define SERVER_HPP
 #include "Location.hpp"
 
 using namespace std;
@@ -38,3 +38,5 @@ class Server{
         size_t      getSize()const;
 
 };
+
+#endif
