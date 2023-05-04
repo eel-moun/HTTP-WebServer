@@ -112,7 +112,7 @@ string Server::getErrorPage(unsigned int index) const{
 }
 
 Location Server::getLocation(size_t index) const{
-    if (index > size)
+    if (index >= size)
         throw out_of_range("Server::getLocation");
     return locations[index];
 }

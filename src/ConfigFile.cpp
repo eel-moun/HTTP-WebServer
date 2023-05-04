@@ -24,7 +24,7 @@ ConfigFile::~ConfigFile(){
 }
 
 Server ConfigFile::getServer(size_t index) const{
-    if (index > size)
+    if (index >= size)
         throw out_of_range("ConfigFile::getServer");
     return(servers[index]);
 }

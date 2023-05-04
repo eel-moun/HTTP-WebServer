@@ -5,7 +5,6 @@
         "bitset": "cpp",
         "fstream": "cpp",
         "locale": "cpp",
-        "iostream": "cpp",
-        "istream": "cpp"
+        "iostream": "cpp"
     }
 }

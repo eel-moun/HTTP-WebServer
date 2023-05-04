@@ -13,7 +13,7 @@ int keyValue(string line, ConfigFile& config)
     string key;
     string value;
 
-    removeWS(line);
+    // removeWS(line);
     if(!line.size())
         return(0);
     delimiterPos = line.find(" ");
@@ -28,7 +28,9 @@ void fillConfigFile(string key, string value, ConfigFile& config)
     array<string, 13> keys = {"listen", "host", "server_name","error_page400", "error_page402", "error_page403", "error_page404", "error_page500", "error_page501", "server", "location", "path", "index"};
     int i = 0;
     int index = config.getSize();
-    int index2 = config.getServer(index - 1).getSize();
+    int index2;
+    if(index > 0)
+        index2 = config.getServer(index - 1).getSize();
 
     while(!key.compare(keys[i]))
         i++;

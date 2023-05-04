@@ -9,7 +9,7 @@
 using namespace std;
 #define DEFAULT_PATH "./config/default"
 
-void        removeWS(string& line);
+void        rmSpaces(string& line);
 ifstream   openFileStream(int ac ,char **av);
 int         checkConfigFile(int ac, char **av, ConfigFile& config);
 int         keyValue(string line, ConfigFile& config);
