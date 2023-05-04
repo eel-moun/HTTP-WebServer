@@ -3,7 +3,7 @@
 using namespace std;
 #define DEFAULT_PATH "./config/default"
 
-int	checkConfigFile(int ac, char **av, ConfigFile& config)
+void	checkConfigFile(int ac, char **av, ConfigFile& config)
 {
     ifstream &conf_file = openFileStream(ac ,av);
 	parseConfig(conf_file, config);
