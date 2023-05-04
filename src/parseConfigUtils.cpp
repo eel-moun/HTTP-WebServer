@@ -15,7 +15,7 @@ ifstream& openFileStream(int ac ,char **av)
         ifstream* conf_file = new ifstream(static_cast<string>(av[1]));
         if (!*conf_file)
         {
-            delete conf_file;
+            //delete conf_file;
             throw runtime_error("error in opening config file");
         }
         return *conf_file;
@@ -25,7 +25,7 @@ ifstream& openFileStream(int ac ,char **av)
 		ifstream* conf_file = new ifstream(static_cast<string>(DEFAULT_PATH));
 		if (!*conf_file)
         {
-            delete conf_file;
+            //delete conf_file;
             throw runtime_error("error in opening config file");
         }
         return (*conf_file);

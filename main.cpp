@@ -1,11 +1,8 @@
 #include "./headers/parseConfig.hpp"
 
-using namespace std;
-#define DEFAULT_PATH "./config/default"
-
 void	checkConfigFile(int ac, char **av, ConfigFile& config)
 {
-    ifstream conf_file = openFileStream(ac ,av);
+    ifstream &conf_file = openFileStream(ac ,av);
 	parseConfig(conf_file, config);
 }
 
@@ -16,8 +13,11 @@ void parseConfig(ifstream& conf_file, ConfigFile& config)
 	while (getline(conf_file, line, '\n') && line.size() == 0)
 		continue;
 
-	if (getline(conf_file, line, '{') || line.substr(0, 7) != "server " || line.size() != 7)
-		throw invalid_argument("config file syntax error");
+	if (line.substr(0, 7) != "server " || line.size() != 8)
+	{
+		cout << line << endl;
+		throw invalid_argument("config file syntax error1");
+	}
 
 	keyValue("server", config);
 	while (getline(conf_file, line, '\n'))
@@ -26,7 +26,7 @@ void parseConfig(ifstream& conf_file, ConfigFile& config)
 		if (line.substr(0, 10) == "location {")
 		{
 			if (line.size() != 10)
-				throw invalid_argument("config file syntax error");
+				throw invalid_argument("config file syntax error2");
 			keyValue("location", config);
 			while (getline(conf_file, line, '\n'))
 			{
@@ -38,7 +38,7 @@ void parseConfig(ifstream& conf_file, ConfigFile& config)
 			continue;
 		}
 		else if (line.substr(0, 8) == "location")
-			throw invalid_argument("config file syntax error");
+			throw invalid_argument("config file syntax error3");
 
 		if (line.substr(0, 1) == "}" && line.size() == 1)
 		{

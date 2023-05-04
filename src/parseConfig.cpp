@@ -25,50 +25,53 @@ void fillConfigFile(string key, string value, ConfigFile& config)
     if(index > 0)
         index2 = config.getServer(index - 1).getSize();
 
-    while(!key.compare(keys[i]))
+    while(key.compare(keys[i]))
         i++;
+    cout << key << endl;
+    cout << i <<endl;
     switch (i)
     {
-        case 1:
+        case 0:
             config.getServer(index - 1).setListen(value);
             break;
-        case 2:
+        case 1:
             config.getServer(index - 1).setHost(value);
             break;
-        case 3:
+        case 2:
             config.getServer(index - 1).setServerName(value);
             break;
-        case 4:
+        case 3:
             config.getServer(index - 1).setErrorPage(value, 400);
             break;
-        case 5:
+        case 4:
             config.getServer(index - 1).setErrorPage(value, 402);
             break;
-        case 6:
+        case 5:
             config.getServer(index - 1).setErrorPage(value, 403);
             break;
-        case 7:
+        case 6:
             config.getServer(index - 1).setErrorPage(value, 404);
             break;
-        case 8:
+        case 7:
             config.getServer(index - 1).setErrorPage(value, 500);
             break;
-        case 9:
+        case 8:
             config.getServer(index - 1).setErrorPage(value, 501);
             break;
-        case 10:
+        case 9:
             config.setServer();
             break;
-        case 11:
+        case 10:
             config.getServer(index - 1).setLocation();
             break;
-        case 12:
+        case 11:
             config.getServer(index - 1).getLocation(index2 - 1).setPath(value);
             break;
-        case 13:
+        case 12:
             config.getServer(index - 1).getLocation(index2 - 1).setIndex(value);
             break;
         default:
+            cout << key << endl;
             throw invalid_argument("Key not supported");
     }
 }

@@ -7,7 +7,7 @@
 #include <array>
 
 using namespace std;
-#define DEFAULT_PATH "./config/default"
+#define DEFAULT_PATH "default/nginx.conf"
 
 void        rmSpaces(string& line);
 ifstream&   openFileStream(int ac ,char **av);

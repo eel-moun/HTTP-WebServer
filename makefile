@@ -1,22 +1,30 @@
+SRC = main.cpp src/ConfigFile.cpp src/Location.cpp src/Server.cpp src/parseConfig.cpp src/parseConfigUtils.cpp
+
+HEADERS = headers/ConfigFile.hpp headers/Location.hpp headers/Server.hpp headers/parseConfig.hpp
+
+NAME = websrv
+
+PATH_OBJ = obj/
+
 CC = c++
-FLAGS = -Wall -Werror -Wextra --std=c++98
-SRC = src/ConfigFile.cpp src/Location.cpp src/Server.cpp src/parseConfig.cpp src/parseConfigUtils.cpp main.cpp
-Headers = ./headers/ConfigFile.hpp ./headers/Location.hpp ./headers/parseConfig.hpp ./headers/Server.hpp
-OBJ = $(SRC:.cpp=.o)
-Name = websrv
 
-all: $(Name)
+FLAGS = -Wall -Wextra -Werror -std=c++98 -g
 
-$(Name):  $(OBJ) $(Headers)
-	$(CC) $(FLAGS) $(OBJ) -o $(Name)
+OBJ = $(addprefix $(PATH_OBJ), $(SRC:.cpp=.o))
 
-%.o : %.cpp $(Headers)
-	$(CC) $(FLAGS) -c $<
+all: $(NAME)
+
+$(NAME): $(OBJ) $(HEADERS)
+	$(CC) $(FLAGS) -o $(NAME) $(SRC)
+
+$(OBJ) : $(PATH_OBJ)%.o: %.cpp $(HEADERS)
+	@mkdir -p $(dir $@)
+	${CC} ${FLAGS} -c $< -o $@
 
 clean:
-	rm -rf $(Name)
+	rm -rf $(PATH_OBJ)
 
 fclean: clean
-	rm -rf $(OBJ);
+	rm -rf $(NAME)
 
-re: clean $(Name)
+re: fclean all
