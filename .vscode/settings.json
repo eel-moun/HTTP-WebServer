@@ -6,6 +6,7 @@
         "fstream": "cpp",
         "locale": "cpp",
         "iostream": "cpp",
-        "stdexcept": "cpp"
+        "stdexcept": "cpp",
+        "ostream": "cpp"
     }
 }

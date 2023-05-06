@@ -13,6 +13,9 @@ void parseConfig(ifstream& conf_file, ConfigFile& config)
 	while (getline(conf_file, line, '\n') && line.size() == 0)
 		continue;
 
+	if (!line.size())
+		return ;
+
 	if (line.substr(0, 7) != "server " || line.size() != 8)
 	{
 		cout << line << endl;

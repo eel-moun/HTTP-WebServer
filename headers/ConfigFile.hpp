@@ -9,7 +9,7 @@ using namespace std;
 class ConfigFile{
     private:
         size_t size;
-        vector<Server> servers;
+        vector<Server*> servers;
     public:
         ConfigFile();
         ConfigFile(const ConfigFile& other);
@@ -17,7 +17,7 @@ class ConfigFile{
 
         ConfigFile& operator=(const ConfigFile& rhs);
 
-        Server getServer(size_t index) const;
+        Server *getServer(size_t index);
         void setServer();
         size_t getSize() const;
 };
