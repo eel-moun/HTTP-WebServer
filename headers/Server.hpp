@@ -2,6 +2,13 @@
 #define SERVER_HPP
 #include "Location.hpp"
 
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <string.h>
+#include <unistd.h>
+#include <poll.h>
+
+
 using namespace std;
 
 class Server{
@@ -23,6 +30,7 @@ class Server{
         string  getValue(string key);
         Location    *getLocation(size_t index) ;
         size_t      getSize() const;
+        void        openServer();
 
 };
 

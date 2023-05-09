@@ -22,6 +22,7 @@ void parseConfig(ifstream& conf_file, ConfigFile& config)
 		throw invalid_argument("config file syntax error1");
 	}
 
+
 	keyValue("server", config);
 	while (getline(conf_file, line, '\n'))
     {
@@ -56,6 +57,9 @@ int main(int ac, char **av)
 {
     ConfigFile  config;
     checkConfigFile(ac, av, config);
+	generate_servers(config);
+
+	
 
     return (0);
 }
