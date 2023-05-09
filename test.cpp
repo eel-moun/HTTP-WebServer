@@ -1,23 +1,15 @@
 #include "./headers/parseConfig.hpp"
+#include <sys/socket.h>
 
 int main(){
-    
-    ConfigFile file;
+    int server_fd;
 
-    file.setServer();
-    file.getServer(0)->setListen("1900");
-    std::cout<< "===>> " << file.getServer(0)->getListen() << std::endl;
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if(server_fd == -1)
+    {
+        perror("socket not created");
+        return 0;
+    }
+    if(setsockopt())
 
-    // cout << file.getSize() << endl;
-    // cout <<"--------------------------------------" << endl;
-    
-    // file.setServer();
-    // cout << file.getSize() << endl;
-
-    // cout <<"--------------------------------------" << endl;
-
-    // file.getServer(0).setListen("100");
-    // cout << file.getServer(0).getListen() << endl;
-
-    // cout <<"--------------------------------------" << endl;
 }
