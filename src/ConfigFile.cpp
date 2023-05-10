@@ -42,7 +42,7 @@ void ConfigFile::setServer(){
 
 void ConfigFile::run_servers(){
     vector<pollfd> fds;
-    //vector<Client *> clients;
+    vector<Client *> clients;
 
     for (size_t i = 0; i < getSize(); i++)
     {
@@ -64,7 +64,7 @@ void ConfigFile::run_servers(){
         for(size_t i = 0; i < fds.size(); i++)
         {
             if((fds[i].revents & POLLIN) && i < size)
-                Accept(fds,NULL,i);
+                Accept(fds,clients,i);
             else{
                 if(fds[i].revents & POLLHUP)
                 {
@@ -79,7 +79,9 @@ void ConfigFile::run_servers(){
                     //manage request && create response
                 }
                 if(fds[i].revents & POLLOUT)
+                {
                     // send response
+                }
             }
         }
     }

@@ -1,5 +1,5 @@
 #include "./headers/parseConfig.hpp"
-#include "headers/ServerCreation.hpp"
+#include "headers/ServerUtils.hpp"
 
 void	checkConfigFile(int ac, char **av, ConfigFile& config)
 {
