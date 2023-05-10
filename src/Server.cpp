@@ -1,4 +1,5 @@
 #include "../headers/Server.hpp"
+#include "../headers/ServerCreation.hpp"
 
 Server::Server(){
     cout << "Server default constructor called" << endl;
@@ -52,64 +53,46 @@ size_t Server::getSize() const{
     return size;
 }
 
-#include <fcntl.h>
-
 void    Server::openServer()
 {
-    int sock_fd, new_sock_fd, len_serv_addr, opt;
+    setSock_fd();
+    setServ_addr();
+}
 
-    struct sockaddr_in serv_addr;
-    len_serv_addr = sizeof(serv_addr);
+void Server::setSock_fd(){
+    int opt;
+
     opt = 1;
-
     sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+
     if (sock_fd < 0)
-    {
-        strerror(errno);
-        return ;
-    }
+        throw runtime_error("socket not initialised correctly");
 
-    if (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt))) {
-        strerror(errno);
-        close(sock_fd);
-        return ;
-    }
+    if (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)))
+        throw runtime_error("Server::setSock_fd sockopt not set correctly");
+    
+    if (fcntl(sock_fd, F_SETFL, O_NONBLOCK) < 0)
+        throw runtime_error("Error while setiing O_NONOBLOCK...");
+}
 
-    if (fcntl(sock_fd, F_SETFL, O_NONBLOCK) < 0) {
-        throw std::runtime_error("Error while setiing O_NONOBLOCK...");
-    }
-
-    // 5asna n7ado no9at o ngeriw localhost nbadloh l default 
-
+void Server::setServ_addr(){
 
     serv_addr.sin_family = AF_INET;
-    if (!this->getValue("host").compare("localhost"))
+    
+    if (!this->getValue("host").compare("localhost")) // possible_error
         serv_addr.sin_addr.s_addr = INADDR_ANY;
     else
-        // serv_addr.sin_addr.s_addr = this->getValue("host");
+        serv_addr.sin_addr.s_addr = ft_inet_addr(this->getValue("host")); // possible_error
     serv_addr.sin_port = htons(stoi(this->getValue("listen")));
 
     if (bind(sock_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
-    {
-        strerror(errno);
-        close(sock_fd);
-        return;
-    }
+        throw runtime_error("Server::setServ_addr couldn't bind");
 
-    if (listen(sock_fd, 10))
-    {
-        strerror(errno);
-        close(sock_fd);
-        return ;
-    }
+    if (listen(sock_fd, 10) < 0)
+        throw runtime_error("Server::setServ_addr couldn't listen");
+}
 
-    if ((new_sock_fd = accept(sock_fd, (struct sockaddr*)&serv_addr, (socklen_t*)&len_serv_addr)))
-    {
-        strerror(errno);
-        close(sock_fd);
-        return ;
-    }
-
-    
-
+int     Server::getSock_fd() const
+{
+    return (this->sock_fd);
 }

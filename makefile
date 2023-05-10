@@ -1,6 +1,6 @@
-SRC = main.cpp server.cpp src/ConfigFile.cpp src/Location.cpp src/Server.cpp src/parseConfig.cpp src/parseConfigUtils.cpp
+SRC = main.cpp server.cpp src/ConfigFile.cpp src/Location.cpp src/Server.cpp src/parseConfig.cpp src/parseConfigUtils.cpp src/serverUtils.cpp
 
-HEADERS = headers/ConfigFile.hpp headers/Location.hpp headers/Server.hpp headers/parseConfig.hpp
+HEADERS = headers/ConfigFile.hpp headers/Location.hpp headers/Server.hpp headers/parseConfig.hpp headers/ServerCreation.hpp
 
 NAME = websrv
 

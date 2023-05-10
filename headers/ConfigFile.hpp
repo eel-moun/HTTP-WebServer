@@ -3,6 +3,8 @@
 
 #include "Server.hpp"
 #include <exception>
+#include "Client.hpp"
+#include "ServerUtils.hpp"
 
 using namespace std;
 
@@ -19,6 +21,7 @@ class ConfigFile{
 
         Server *getServer(size_t index);
         void setServer();
+        void run_servers();
         size_t getSize() const;
 };
 #endif

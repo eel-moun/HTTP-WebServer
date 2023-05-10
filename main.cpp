@@ -1,4 +1,5 @@
 #include "./headers/parseConfig.hpp"
+#include "headers/ServerCreation.hpp"
 
 void	checkConfigFile(int ac, char **av, ConfigFile& config)
 {
@@ -57,9 +58,6 @@ int main(int ac, char **av)
 {
     ConfigFile  config;
     checkConfigFile(ac, av, config);
-	generate_servers(config);
-
-	
 
     return (0);
 }

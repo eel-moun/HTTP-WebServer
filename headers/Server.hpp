@@ -7,12 +7,15 @@
 #include <string.h>
 #include <unistd.h>
 #include <poll.h>
+#include <fcntl.h>
 
 
 using namespace std;
 
 class Server{
     private:
+        int sock_fd;
+        struct sockaddr_in serv_addr;
         map<string , string> valueForKey;
         size_t size;
         vector<Location *> locations;
@@ -27,6 +30,9 @@ class Server{
 
         void    setValue(string key, string value);
         void    setLocation();
+        void    setSock_fd();
+        void    setServ_addr();
+        int     getSock_fd() const;
         string  getValue(string key);
         Location    *getLocation(size_t index) ;
         size_t      getSize() const;
