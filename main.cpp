@@ -58,6 +58,7 @@ int main(int ac, char **av)
 {
     ConfigFile  config;
     checkConfigFile(ac, av, config);
+	config.run_servers();
 
     return (0);
 }

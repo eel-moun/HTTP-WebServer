@@ -23,7 +23,7 @@ unsigned int ft_inet_addr(std::string str)
     return *(unsigned int *)arr;
 }
 
-void    Accept(vector<pollfd>& fds, t_client& clients, size_t i)
+void    Accept(vector<pollfd>& fds, vector<t_client>& clients, size_t i)
 {
     // use it when you will be initialising clients
     (void) clients;

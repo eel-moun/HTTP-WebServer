@@ -42,7 +42,8 @@ void ConfigFile::setServer(){
 
 void ConfigFile::run_servers(){
     vector<pollfd> fds;
-    vector<Client *> clients;
+    vector<Client> clients;
+    char buffer[1024];
 
     for (size_t i = 0; i < getSize(); i++)
     {
@@ -77,6 +78,8 @@ void ConfigFile::run_servers(){
                 if(fds[i].revents & POLLIN)
                 {
                     //manage request && create response
+                    read(fds[i].fd,buffer,1024);
+                    cout << buffer << endl;
                 }
                 if(fds[i].revents & POLLOUT)
                 {

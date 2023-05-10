@@ -3,9 +3,10 @@
 #include <iostream>
 #include <exception>
 #include "Server.hpp"
+#include "Client.hpp"
 
 unsigned int    ft_inet_addr(std::string str);
-void            Accept(vector<pollfd>& fds, t_client& clients, size_t i);
+void            Accept(vector<pollfd>& fds, vector<t_client>& clients, size_t i);
 
 
 #endif
