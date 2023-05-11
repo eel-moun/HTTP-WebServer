@@ -44,6 +44,7 @@ void ConfigFile::run_servers(){
     vector<pollfd> fds;
     vector<Client> clients;
     char buffer[1024];
+    string test;
 
     for (size_t i = 0; i < getSize(); i++)
     {
@@ -79,7 +80,8 @@ void ConfigFile::run_servers(){
                 {
                     //manage request && create response
                     read(fds[i].fd,buffer,1024);
-                    cout << buffer << endl;
+                    test = lineToParse("Host" ,buffer);
+                    cout << test << endl;
                 }
                 if(fds[i].revents & POLLOUT)
                 {

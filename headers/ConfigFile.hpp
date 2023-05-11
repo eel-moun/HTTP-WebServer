@@ -24,4 +24,5 @@ class ConfigFile{
         void run_servers();
         size_t getSize() const;
 };
+string lineToParse(string key, string buffer);
 #endif
