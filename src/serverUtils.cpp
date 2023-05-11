@@ -25,16 +25,17 @@ unsigned int ft_inet_addr(std::string str)
 
 void    Accept(vector<pollfd>& fds, vector<t_client>& clients, size_t i)
 {
-    // use it when you will be initialising clients
-    (void) clients;
+   t_client client;
+   pollfd   fd;
+   int      clientFd;
 
-    int clientFd;
-    pollfd fd;
-    
-    if ((clientFd = accept(fds[i].fd,NULL,NULL)) < 0)
+    if ((clientFd = accept(fds[i].fd ,NULL ,NULL)) < 0)
         throw runtime_error("couldn't accpet client");
+
     fcntl(clientFd, F_SETFL, O_NONBLOCK);
-    fd.fd =clientFd;
+    fd.fd = clientFd;
     fd.events = POLL_IN | POLL_OUT;
     fds.push_back(fd);
+    client.new_sock_fd = clientFd;
+    clients.push_back(client);
 }

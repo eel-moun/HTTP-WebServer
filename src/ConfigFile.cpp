@@ -56,7 +56,7 @@ void ConfigFile::run_servers(){
         _fd.events = POLLIN | POLLOUT | POLLHUP;
         fds.push_back(_fd);
     }
-
+    cout << "test" << endl;
     while (true)
     {
         fds.shrink_to_fit();
@@ -65,13 +65,15 @@ void ConfigFile::run_servers(){
         {
             //error
         }
-        for(size_t i = 0; i < fds.size(); i++)
+        cout << "test1" << endl;
+        for (size_t i = 0; i < fds.size(); i++)
         {
-            if((fds[i].revents & POLLIN) && i < size)
-                Accept(fds,clients,i);
-            else{
-                if(fds[i].revents & POLLHUP)
+            if ((fds[i].revents & POLLIN) && i < size)
+                Accept(fds, clients, i);
+            else {
+                if (fds[i].revents & POLLHUP)
                 {
+                    cout << "test2" << endl;
                     close(fds[i].fd);
                     fds.erase(fds.begin() + i);
                     clients.erase(i - size);
@@ -79,15 +81,17 @@ void ConfigFile::run_servers(){
                     i--;
                     continue;
                 }
-                if(fds[i].revents & POLLIN)
+                if (fds[i].revents & POLLIN)
                 {
+                    cout << "test3" << endl;
                     //manage request && create response
-                    read(fds[i].fd,buffer,1024);
-                    clients[i - size];
-                    test = lineToParse("tacos" ,buffer);
-                    cout << test << endl;
+                    read(fds[i].fd, buffer, 1024);
+                    cout << buffer << endl;
+                    parseRequest(clients[i], buffer);
+                    // test = lineToParse("Host" ,buffer);
+                    cout << clients[0].request["method"] << endl;
                 }
-                if(fds[i].revents & POLLOUT)
+                if (fds[i].revents & POLLOUT)
                 {
                     // send response
                 }
