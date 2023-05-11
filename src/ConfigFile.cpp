@@ -46,7 +46,8 @@ void ConfigFile::run_servers(){
     char buffer[1024];
     string test;
 
-    for (size_t i = 0; i < getSize(); i++)
+    bzero(buffer, 1024);
+    for (size_t i = 0; i < size; i++)
     {
         getServer(i)->openServer();
         pollfd _fd;
@@ -59,6 +60,7 @@ void ConfigFile::run_servers(){
     while (true)
     {
         fds.shrink_to_fit();
+        clients.shrink_to_fit();
         if(poll(fds.data(), fds.size(), -1) < 0)
         {
             //error
@@ -72,6 +74,7 @@ void ConfigFile::run_servers(){
                 {
                     close(fds[i].fd);
                     fds.erase(fds.begin() + i);
+                    clients.erase(i - size);
                     // delete client && erase client
                     i--;
                     continue;
@@ -80,7 +83,8 @@ void ConfigFile::run_servers(){
                 {
                     //manage request && create response
                     read(fds[i].fd,buffer,1024);
-                    test = lineToParse("Host" ,buffer);
+                    clients[i - size];
+                    test = lineToParse("tacos" ,buffer);
                     cout << test << endl;
                 }
                 if(fds[i].revents & POLLOUT)

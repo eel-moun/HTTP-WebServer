@@ -12,7 +12,7 @@ string lineToParse(string key, string buffer){
         return res;
     }
 
-    while (buffer.at(0) != '\0')
+    while (buffer.at(0) != '\r')
     {
         pos = buffer.find("\r\n");
         res = buffer.substr(0,pos);
@@ -20,5 +20,5 @@ string lineToParse(string key, string buffer){
             return res;
         buffer.erase(0,pos+2);
     }
-    return buffer;
+    return "";
 }
