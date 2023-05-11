@@ -2,11 +2,14 @@
 #define CLIENT_HPP
 
 #include "Server.hpp"
+#include <map>
 
 typedef struct Client
 {
     int new_sock_fd;
-}t_client;
+    std::map<std::string, std::string> request;
+
+}   t_client;
 
 
 #endif
