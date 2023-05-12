@@ -7,7 +7,7 @@
 
 void    parseRequest(t_client& client, string buffer)
 {
-    string key[8] = {"method", "path", "protocol", "host", "port", "media-type", "charset", "lenght"};
+    string key[3] = {"method", "path", "protocol"};
     string str;
     int i = 0;
 
@@ -21,28 +21,29 @@ void    parseRequest(t_client& client, string buffer)
         if (str.compare("Host"))
             throw runtime_error("unwanted value");
         if (getline(ss1, str, ':'))
-            client.request.insert(pair<string, string>(key[i++], str.substr(1)));
+            client.request.insert(pair<string, string>("host", str.substr(1)));
         if (getline(ss1, str, ':'))
-            client.request.insert(pair<string, string>(key[i++], str));
+            client.request.insert(pair<string, string>("port", str));
     }
 
     stringstream ss2(lineToParse("Content-Type", buffer));
     if (getline(ss2, str, ' '))
     {
-        cout << "||||" << str << "||||" << endl;
         if (str.compare("Content-Type:"))
             throw runtime_error("unwanted value1");
         if (getline(ss2, str, ';'))
-            client.request.insert(pair<string, string>(key[i++], str));
+            client.request.insert(pair<string, string>("media-type", str));
         if (getline(ss2, str, ';'))
-            client.request.insert(pair<string, string>(key[i++], str.substr(1)));
+            client.request.insert(pair<string, string>("charset", str.substr(1)));
     }
     
-    str = lineToParse("Content-Length", buffer);
-    if (!str.compare(""))
-        return;
-    if (str.compare("Content-Length"))
-        throw runtime_error("unwanted value");
-    client.request.insert(pair<string, string>(key[i++], str.substr(16)));
+    stringstream ss3(lineToParse("Content-Length", buffer));
+    if (getline(ss3, str, ' '))
+    {
+        if (str.compare("Content-Length:"))
+            throw runtime_error("unwanted value");
+        if (getline(ss3, str, ' '))
+            client.request.insert(pair<string, string>("lenght", str));
+    }
 
 }
