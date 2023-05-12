@@ -15,7 +15,7 @@ void    parseRequest(t_client& client, string buffer)
     while (getline(ss, str, ' '))
         client.request.insert(pair<string, string>(key[i++], str));
 
-    stringstream ss1(lineToParse("host", buffer));
+    stringstream ss1(lineToParse("Host", buffer));
     if (getline(ss1, str, ':'))
     {
         if (str.compare("Host"))
@@ -26,7 +26,7 @@ void    parseRequest(t_client& client, string buffer)
             client.request.insert(pair<string, string>(key[i++], str));
     }
 
-    stringstream ss2(lineToParse("content-type", buffer));
+    stringstream ss2(lineToParse("Content-Type", buffer));
     if (getline(ss2, str, ' '))
     {
         if (str.compare("Content-Type:"))
@@ -37,7 +37,7 @@ void    parseRequest(t_client& client, string buffer)
             client.request.insert(pair<string, string>(key[i++], str.substr(1)));
     }
     
-    str = lineToParse("content-length", buffer);
+    str = lineToParse("Content-Length", buffer);
     if (!str.compare(""))
         return;
     if (str.compare("Content-Length"))

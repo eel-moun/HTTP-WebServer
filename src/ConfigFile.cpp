@@ -76,7 +76,7 @@ void ConfigFile::run_servers(){
                     cout << "test2" << endl;
                     close(fds[i].fd);
                     fds.erase(fds.begin() + i);
-                    clients.erase(i - size);
+                    //clients.erase(i - size);
                     // delete client && erase client
                     i--;
                     continue;
@@ -87,9 +87,7 @@ void ConfigFile::run_servers(){
                     //manage request && create response
                     read(fds[i].fd, buffer, 1024);
                     cout << buffer << endl;
-                    parseRequest(clients[i], buffer);
-                    // test = lineToParse("Host" ,buffer);
-                    cout << clients[0].request["method"] << endl;
+                    parseRequest(clients[i - size], buffer);
                 }
                 if (fds[i].revents & POLLOUT)
                 {
