@@ -8,6 +8,7 @@ typedef struct Client
 {
     int new_sock_fd;
     std::map<std::string, std::string> request;
+    string body;
 
 }   t_client;
 
