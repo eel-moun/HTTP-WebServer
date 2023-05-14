@@ -1,4 +1,6 @@
-SRC = main.cpp src/ConfigFile.cpp src/Location.cpp src/Server.cpp src/parseConfig.cpp src/parseConfigUtils.cpp src/serverUtils.cpp src/RequestUtils.cpp setRequest.cpp
+SRC = main.cpp src/ConfigFile.cpp src/Location.cpp src/Server.cpp src/parseConfig.cpp\
+		src/parseConfigUtils.cpp src/serverUtils.cpp src/RequestUtils.cpp setRequest.cpp\
+			sendResponse.cpp
 
 HEADERS = headers/ConfigFile.hpp headers/Location.hpp headers/Server.hpp headers/parseConfig.hpp headers/ServerUtils.hpp
 
@@ -8,7 +10,7 @@ PATH_OBJ = obj/
 
 CC = c++
 
-FLAGS = -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address
+FLAGS = -Wall -Wextra -Werror -std=c++98 -g
 
 OBJ = $(addprefix $(PATH_OBJ), $(SRC:.cpp=.o))
 

@@ -66,11 +66,9 @@ void ConfigFile::run_servers(){
         }
         for (size_t i = 0; i < fds.size(); i++)
         {
-            cout << "test2" << endl;
             if ((fds[i].revents & POLLIN) && i < size)
                 Accept(fds, clients, i);
             else {
-                cout << "test3" << endl;
                 if (fds[i].revents & POLLHUP)
                 {
                     close(fds[i].fd);
@@ -82,12 +80,12 @@ void ConfigFile::run_servers(){
                 }
                 if (fds[i].revents & POLLIN)
                 {
-                    cout << "test4" << endl;
                     //manage request && create response
                     read(fds[i].fd, buffer, 1024);
                     cout << buffer << endl;
                     parseRequest(clients[i - size], buffer);
-                    cout << clients[i - size].request["lenght"] << endl;
+                    makeResponse(clients[i - size], getRightServer(servers, clients[i - size]));
+                    // cout << clients[i - size].request["lenght"] << endl;
                 }
                 if (fds[i].revents & POLLOUT)
                 {

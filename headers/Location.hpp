@@ -10,6 +10,7 @@ class Location{
     private:
         string path;
         string index;
+        vector<string *> files;
     
     public:
         Location();
