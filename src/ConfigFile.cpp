@@ -56,7 +56,6 @@ void ConfigFile::run_servers(){
         _fd.events = POLLIN | POLLOUT | POLLHUP;
         fds.push_back(_fd);
     }
-    cout << "test" << endl;
     while (true)
     {
         fds.shrink_to_fit();
@@ -65,7 +64,6 @@ void ConfigFile::run_servers(){
         {
             //error
         }
-        cout << "test1" << endl;
         for (size_t i = 0; i < fds.size(); i++)
         {
             if ((fds[i].revents & POLLIN) && i < size)
@@ -73,7 +71,6 @@ void ConfigFile::run_servers(){
             else {
                 if (fds[i].revents & POLLHUP)
                 {
-                    cout << "test2" << endl;
                     close(fds[i].fd);
                     fds.erase(fds.begin() + i);
                     //clients.erase(i - size);
@@ -83,11 +80,10 @@ void ConfigFile::run_servers(){
                 }
                 if (fds[i].revents & POLLIN)
                 {
-                    cout << "test3" << endl;
                     //manage request && create response
                     read(fds[i].fd, buffer, 1024);
-                    cout << buffer << endl;
-                    parseRequest(clients[i - size], buffer);
+                    //parseRequest(clients[i - size], buffer);
+                    cout << chunkedToNormal(buffer) << endl;
                 }
                 if (fds[i].revents & POLLOUT)
                 {

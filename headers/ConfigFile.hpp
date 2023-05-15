@@ -27,5 +27,6 @@ class ConfigFile{
 
 void    parseRequest(t_client& client, string buffer);
 string lineToParse(string key, string buffer);
+string chunkedToNormal(string buffer);
 
 #endif

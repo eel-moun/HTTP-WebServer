@@ -5,6 +5,9 @@ string lineToParse(string key, string buffer){
     string res;
 
     pos = buffer.find("\r\n");
+    cout << "<----------------->" << endl;
+    cout << pos << endl;
+    cout << "<----------------->" << endl;
     if (!key.compare("first"))
     {
         res = buffer.substr(0,pos);
@@ -22,27 +25,30 @@ string lineToParse(string key, string buffer){
     return "";
 }
 
-string chunkedToNormal(string buffer ,string res)
+string chunkedToNormal(string buffer)
 {
-    string chunkedBody;
     string tmp;
-    int len;
+    string res;
+    size_t len;
 
     len = 1;
-    chunkedBody = buffer.substr(0, buffer.find("/r/n/r/n") + 4);
-    while(len != 0)
+    buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+    while(buffer.find("0\r\n\r\n"))
     {
-        len = stoi(buffer.substr(0, buffer.find("/r/n")));
-        buffer.erase(0,buffer.find("/r/n") + 2);
-        tmp = substr(0, buffer.find("/r/n"));
+        if(buffer.find("\r\n") == 0)
+            buffer.erase(0,buffer.find("\r\n") + 2);
+        
+        len = stoi(buffer.substr(0, buffer.find("\r\n")), 0, 16);
+        buffer.erase(0,buffer.find("\r\n") + 2);
+
+        tmp = buffer.substr(0, buffer.find("\r\n"));
         if(tmp.size() == len)
         {
-            res.push_back(tmp);
-            buffer.erase(0,buffer.find("/r/n") + 2);
+            res += tmp;
+            buffer.erase(0,buffer.find("\r\n") + 2);
         }
         else{
-            cout << "wrong len in chunkedToNormal" << endl;
-            //error
+            throw runtime_error("wrong size in chunked request");
         }
     }
     return (res);
