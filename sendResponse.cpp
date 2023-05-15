@@ -116,7 +116,7 @@ void    sendResponse(const string& content, const string& content_type, const in
 // /www
 // /www/var
 
-const string& checkPathLocation(string& req_path, Server& server)
+const string checkPathLocation(string& req_path, Server& server)
 {
     string  path_to_serve;
     string  location_path;
@@ -140,14 +140,13 @@ const string& checkPathLocation(string& req_path, Server& server)
     if (!req_path.compare(server.getLocation(j)->getPath().append("/")))
         return (server.getLocation(j)->getIndex());
     else
-        //                                        this is size of how many files in try_files
-        for (int i = 0; i < server.getLocation(j).files_size(); i++)
-        //                              this is method to get the file in vector using i
-            if (!server.getLocation(j).getFile(i).compare(req_pathsubstr(server.getLocation(j)->getPath().size() + 1)))
-                return (server.getLocation(j).getFile(i));
+        for (size_t i = 0; i < server.getLocation(j)->getSize(); i++)
+            if (!server.getLocation(j)->getFile(i).compare(req_path.substr(server.getLocation(j)->getPath().size() + 1)))
+                return (server.getLocation(j)->getFile(i));
     else
         // error 404 page not found
         throw runtime_error("error 404 page not found read file in GetMethod");
+    return ("");
 }
 
 
@@ -210,7 +209,7 @@ Server& getRightServer(vector<Server *> servers, t_client& client)
     if (!host.size() || !port.size())
         throw runtime_error("no host or port available to check");
     
-    for (int i = 0; i < servers.size(); i++)
+    for (size_t i = 0; i < servers.size(); i++)
         if (servers[i]->getValue("host") == host && servers[i]->getValue("listen") == port)
             return (*servers[i]);
 

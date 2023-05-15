@@ -27,7 +27,7 @@ void fillConfigFile(string key, string value, ConfigFile& config)
     if (index > 0)
         index2 = config.getServer(index - 1)->getSize();
 
-    while (key.compare(keys[i]))
+    while (i <= 13 && key.compare(keys[i]))
         i++;
 
     if (i < 9)
@@ -48,13 +48,16 @@ void fillConfigFile(string key, string value, ConfigFile& config)
                 break;
             case 12:
                 if(index2 == 0)
-                    throw invalid_argument("declare a location");
+                {
+                    config.getServer(index - 1)->setValue(key, value);
+                    break;
+                }
                 config.getServer(index - 1)->getLocation(index2 - 1)->setIndex(value);
                 break;
             case 13:
                 if(index2 == 0)
                     throw invalid_argument("declare a location");
-                config.getServer(index - 1)->getLocation(index2 - 1)->setIndex(value);
+                config.getServer(index - 1)->getLocation(index2 - 1)->setFile(value);
                 break;
             default:
                 cout << key << endl;

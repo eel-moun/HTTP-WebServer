@@ -10,7 +10,7 @@ class Location{
     private:
         string path;
         string index;
-        vector<string *> files;
+        vector<string> files;
     
     public:
         Location();
@@ -19,9 +19,12 @@ class Location{
 
         Location& operator=(const Location& rhs);
 
-        void setPath(string path);
-        void setIndex(string index);
-        string getPath() const;
-        string getIndex() const;
+        void    setPath(string path);
+        void    setIndex(string index);
+        void    setFile(string file);
+        string  getPath() const;
+        string  getIndex() const;
+        string  getFile(size_t index);
+        size_t  getSize();
 };
 #endif

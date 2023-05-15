@@ -45,3 +45,20 @@ string Location::getPath() const{
 string Location::getIndex() const{
     return index;
 }
+
+void    Location::setFile(string _file)
+{
+    this->files.push_back(_file);
+}
+
+string  Location::getFile(size_t index)
+{
+    if (index >= this->files.size())
+        throw out_of_range("Server::getLocation");
+    return (files[index]);
+}
+
+size_t  Location::getSize()
+{
+    return (this->files.size());
+}
