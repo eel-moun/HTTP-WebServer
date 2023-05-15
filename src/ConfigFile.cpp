@@ -82,8 +82,10 @@ void ConfigFile::run_servers(){
                 {
                     //manage request && create response
                     read(fds[i].fd, buffer, 1024);
-                    //parseRequest(clients[i - size], buffer);
-                    cout << chunkedToNormal(buffer) << endl;
+                    cout << buffer << endl;
+                    parseRequest(clients[i - size], buffer);
+                    makeResponse(clients[i - size], getRightServer(servers, clients[i - size]));
+                    // cout << clients[i - size].request["lenght"] << endl;
                 }
                 if (fds[i].revents & POLLOUT)
                 {

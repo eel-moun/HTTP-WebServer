@@ -15,6 +15,8 @@ void    parseRequest(t_client& client, string buffer)
     while (getline(ss, str, ' '))
         client.request.insert(pair<string, string>(key[i++], str));
 
+    // if protocol != http/1.1 error code 501 Not Implemented
+
     stringstream ss1(lineToParse("Host", buffer));
     if (getline(ss1, str, ':'))
     {
