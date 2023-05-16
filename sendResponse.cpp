@@ -118,25 +118,9 @@ void    sendResponse(const string& content, const string& content_type, const in
 
 const string checkPathLocation(string& req_path, Server& server)
 {
-    string  path_to_serve;
-    string  location_path;
-    size_t  size = 0;
     int j;
 
-
-    for (size_t i = 0; i < server.getSize(); i++)
-    {
-        location_path = server.getLocation(i)->getPath();
-        if (req_path.find(location_path) == 0)
-        {
-            if (size < location_path.size())
-            {
-                size = location_path.size();
-                j = i;
-            }
-        }
-    }
-
+    j = getLocationIndex(req_path, server);
     if (!req_path.compare(server.getLocation(j)->getPath().append("/")))
         return (server.getLocation(j)->getIndex());
     else
@@ -175,10 +159,24 @@ void    GetMethod(t_client& client, Server& server)
     sendResponse(buffer, getContentType(req_path), 200, client.new_sock_fd);
 }
 
-// void    PostMethod(t_client& client)
-// {
+void    PostMethod(t_client& client, Server& server)
+{
+    string filename;
+    std::ofstream postfile;
+    int i = 0;
+    //check the path of the Request and if post is allowed
 
-// }
+    //<-------------------------------->
+    //get the file name and create it
+    filename = client.request["path"].substr(server.getLocation(i)->getPath().size() + 1);
+    if(filename.size() == 0)
+        filename = generateRandomString(10) + "." +client.request["Content-Type"];
+    
+
+    //<-------------------------------->
+
+    //open the file and write the body to it
+}
 
 // void    DeleteMethod(t_client& client)
 // {}

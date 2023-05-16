@@ -5,6 +5,7 @@
 #include <exception>
 #include "Client.hpp"
 #include "ServerUtils.hpp"
+#include <random>
 
 using namespace std;
 
@@ -34,5 +35,6 @@ const string    getErrorByCode(const int error_code);
 string          getContentType(const string& path);
 
 Server&         getRightServer(vector<Server *> Servers, t_client& client);
-
+size_t          getLocationIndex(string& req_path, Server& server);
+string generateRandomString(int length);
 #endif

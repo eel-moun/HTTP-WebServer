@@ -5,9 +5,6 @@ string lineToParse(string key, string buffer){
     string res;
 
     pos = buffer.find("\r\n");
-    cout << "<----------------->" << endl;
-    cout << pos << endl;
-    cout << "<----------------->" << endl;
     if (!key.compare("first"))
     {
         res = buffer.substr(0,pos);
@@ -52,4 +49,40 @@ string chunkedToNormal(string buffer)
         }
     }
     return (res);
+}
+
+size_t getLocationIndex(string req_path, Server server)
+{
+    string  location_path;
+    size_t  size = 0;
+    size_t  j;
+
+
+req_path.substr(location_path.size() +1);
+    for (size_t i = 0; i < server.getSize(); i++)
+    {
+        location_path =server.getLocation(i)->getPath();
+        if (req_path.find(location_path) == 0)
+        {
+            if (size < location_path.size())
+            {
+                size = location_path.size();
+                j = i;
+            }
+        }
+    }
+    return j;
+}
+
+string generateRandomString(int length) {
+    string randomString;
+    random_device rd;
+    mt19937 generator(rd());
+    uniform_int_distribution<int> distribution(97, 122);
+
+    for (int i = 0; i < length; ++i) {
+        randomString += static_cast<char>(distribution(generator));
+    }
+
+    return randomString;
 }
