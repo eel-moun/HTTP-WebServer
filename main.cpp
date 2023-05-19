@@ -1,10 +1,27 @@
 #include "./headers/parseConfig.hpp"
 #include "headers/ServerUtils.hpp"
 
+void	checkDefault(ConfigFile& config)
+{
+	int	count = 0;
+
+	for (size_t i = 0; i < config.getSize(); i++)
+	{
+		for (size_t j = 0; j < config.getServer(i)->getSize(); j++)
+		{
+			if (!config.getServer(i)->getLocation(j)->getPath().compare("/"))
+				count++;
+		}
+		if (count != 1)
+			throw invalid_argument("config file syntax error in default location");
+	}
+}
+
 void	checkConfigFile(int ac, char **av, ConfigFile& config)
 {
     ifstream &conf_file = openFileStream(ac ,av);
 	parseConfig(conf_file, config);
+	checkDefault(config);
 }
 
 void parseConfig(ifstream& conf_file, ConfigFile& config)

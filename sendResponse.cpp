@@ -147,78 +147,67 @@ int  getRightLocation(string req_path, Server server)
     return (j);
 }
 
-void    GetMethod(t_client& client, Server server)
+string  getRightRoot(Server server, int loc_pos)
+{
+    if (server.getLocation(loc_pos)->getRoot().size())
+       return (server.getLocation(loc_pos)->getRoot());
+    else if (server.getValue("root").size())
+        return (server.getValue("root"));
+    else
+        throw runtime_error("403 forbiden");
+}
+
+string  getRightContent(int fd)
+{
+    int r = 1;
+    char buffer[1024];
+    string content;
+
+    while (r != 0)
+    {
+        bzero(buffer, 1024);
+        r = read(fd, buffer, 1023);
+        content.append(buffer, r);
+    }
+    return (content);
+}
+
+int    GetMethod(t_client& client, Server server)
 {
     string req_path;
-    string buffer;
     string path_to_serve;
     string test_file;
-    
+    int fd;
 
-    req_path = client.request["path"].substr(0, req_path.find("?")); //  /mok || / || /test
-
-//  5asni n9alab 3la location li m3a request
-
+    req_path = client.request["path"].substr(0, req_path.find("?"));
     int loc_pos = getRightLocation(req_path, server);
     if (loc_pos == -1)
-    {
-        // if (server.getValue("root").size() && server.getValue("index").size())
-        //     path_to_serve = server.getValue("root").append("/").append(server.getValue("index"));
-        // else
             throw runtime_error("error 403 forbiden");
-    }
-    ///////////////////////////////////////////////////////////////////
-    else if (req_path.substr(server.getLocation(loc_pos)->getPath().size()).size() == 0)
+    path_to_serve = getRightRoot(server, loc_pos);
+    if (req_path.substr(server.getLocation(loc_pos)->getPath().size()).size() == 0)
     {
-        ////////////////------ get right root ------//////////////////
-        if (server.getLocation(loc_pos)->getRoot().size())
-            path_to_serve = server.getLocation(loc_pos)->getRoot();
-        else if (server.getValue("root").size())
-            path_to_serve = server.getValue("root");
-        else
-            throw runtime_error("403 forbiden");
     //////////////////------ get right index file ------////////////////////
-
         test_file = path_to_serve;
         for (size_t i = 0; i < server.getLocation(loc_pos)->getIndexSize(); i++)
         {
-            ifstream check_path(test_file.append("/").append(server.getLocation(loc_pos)->getIndex(i)));
-            if (check_path.is_open())
-            {
-                if (getline(check_path, test_file, '\0'))
-                {
-                    sendResponse(test_file, getContentType(server.getLocation(loc_pos)->getIndex(i)), 200, client.new_sock_fd);
-                    return ;
-                }
-                    
-            }
+            fd = open(test_file.append("/").append(server.getLocation(loc_pos)->getIndex(i)).c_str(), O_RDONLY);
+            if (fd != -1)
+                    return (sendResponse(getRightContent(fd), getContentType(server.getLocation(loc_pos)->getIndex(i)), 200, client.new_sock_fd), 0);
             test_file.substr(0, test_file.find_last_of("/"));
         }
         throw runtime_error("error 404 not found"); 
     }
     else
     {
-        ////////////////------ get right root ------//////////////////
-        if (server.getLocation(loc_pos)->getRoot().size())
-            path_to_serve = server.getLocation(loc_pos)->getRoot();
-        else if (server.getValue("root").size())
-            path_to_serve = server.getValue("root");
-        else
-            throw runtime_error("403 forbiden");
-        ////////////////------ check file    ------//////////////////
+        ////////////////------  check file   ------//////////////////
         if (server.getLocation(loc_pos)->getPath().compare("/"))
             path_to_serve = path_to_serve.append(req_path.substr(server.getLocation(loc_pos)->getPath().size()));
         else
             path_to_serve = path_to_serve.append(req_path);
-        ifstream check_path(path_to_serve);
-        if (check_path.is_open())
-        {
-            if (getline(check_path, test_file, '\0'))
-            {
-                sendResponse(test_file, getContentType(req_path), 200, client.new_sock_fd);
-                return ;
-            }
-        }
+
+        fd = open(path_to_serve.c_str(), O_RDONLY);
+        if (fd != -1)
+            return (sendResponse(getRightContent(fd), getContentType(req_path), 200, client.new_sock_fd), 0);
         throw runtime_error("error 404 not found");
     }
 }
@@ -246,7 +235,7 @@ void    makeResponse(t_client& client, Server server)
         // error code 405 method not allowed
 }
 
-Server getRightServer(vector<Server *> servers, t_client& client)
+Server getRightServer(vector<Server *> servers, t_client client)
 {
     string host = client.request["host"];
     string port = client.request["port"];

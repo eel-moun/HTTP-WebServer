@@ -16,6 +16,6 @@ void        checkConfigFile(int ac, char **av, ConfigFile& config);
 int         keyValue(string line, ConfigFile& config);
 void        fillConfigFile(string key, string value, ConfigFile& config);
 void        parseConfig(ifstream& conf_file, ConfigFile& config);
+void	    checkDefault(ConfigFile& config);
 
-void        generate_servers(ConfigFile& config);
 #endif
