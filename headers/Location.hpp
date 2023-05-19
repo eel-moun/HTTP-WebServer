@@ -9,8 +9,10 @@ using namespace std;
 class Location{
     private:
         string path;
-        string index;
-        vector<string> files;
+        vector<string> index;
+        string root;
+        string auto_index;
+        vector<string> allowed_method;
     
     public:
         Location();
@@ -21,10 +23,14 @@ class Location{
 
         void    setPath(string path);
         void    setIndex(string index);
-        void    setFile(string file);
-        string  getPath() const;
-        string  getIndex() const;
-        string  getFile(size_t index);
-        size_t  getSize();
+        void    setRoot(string _root);
+        void    setAutoIndex(string _auto_index);
+        void    setAllowedMethod(string _method);
+        string  getAllowedMethod(size_t index);
+        string  getAutoIndex();
+        string  getPath();
+        string  getIndex(size_t index);
+        string  getRoot();
+        size_t  getIndexSize();
 };
 #endif

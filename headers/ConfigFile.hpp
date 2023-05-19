@@ -27,12 +27,12 @@ class ConfigFile{
 
 void            parseRequest(t_client& client, string buffer);
 string          lineToParse(string key, string buffer);
-void            makeResponse(t_client& client, Server& server);
-void            GetMethod(t_client& client, Server& server);
+void            makeResponse(t_client& client, Server server);
+void            GetMethod(t_client& client, Server server);
 void            sendResponse(const string& content, const string& content_type, const int error_code, const int client_fd);
 const string    getErrorByCode(const int error_code);
 string          getContentType(const string& path);
 
-Server&         getRightServer(vector<Server *> Servers, t_client& client);
+Server         getRightServer(vector<Server *> Servers, t_client& client);
 
 #endif

@@ -73,7 +73,8 @@ void ConfigFile::run_servers(){
                 {
                     close(fds[i].fd);
                     fds.erase(fds.begin() + i);
-                    //clients.erase(i - size);
+                    close(clients[i - 1].new_sock_fd);
+                    clients.erase(clients.begin() + (i - 1));
                     // delete client && erase client
                     i--;
                     continue;

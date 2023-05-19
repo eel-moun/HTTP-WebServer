@@ -3,6 +3,6 @@
 .vscode/settings.json
 test.cpp
 test1.cpp
-websrv.dSYM/*
+websrv.dSYM
 websrv
 obj/*
