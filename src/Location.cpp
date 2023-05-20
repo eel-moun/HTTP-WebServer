@@ -32,33 +32,53 @@ void Location::setPath(string _path){
     this->path = _path;
 }
 
-void Location::setIndex(string _index){
-    if(index.size())
-        throw invalid_argument("Location::setPath key already initialised");
-    this->index = _index;
-}
-
-string Location::getPath() const{
+string Location::getPath(){
     return path;
 }
 
-string Location::getIndex() const{
-    return index;
+void Location::setIndex(string _index){
+    this->index.push_back(_index);
 }
 
-void    Location::setFile(string _file)
-{
-    this->files.push_back(_file);
+string Location::getIndex(size_t _index){
+    return this->index[_index];
 }
 
-string  Location::getFile(size_t index)
+void    Location::setRoot(string _root)
 {
-    if (index >= this->files.size())
-        throw out_of_range("Server::getLocation");
-    return (files[index]);
+    if (this->root.size())
+        throw invalid_argument("Location::setPath key already initialised");
+    this->root = _root;
 }
 
-size_t  Location::getSize()
+string  Location::getRoot()
 {
-    return (this->files.size());
+    return (this->root);
+}
+
+void    Location::setAllowedMethod(string _method)
+{
+    this->allowed_method.push_back(_method);
+}
+
+string  Location::getAllowedMethod(size_t index)
+{
+    return (this->allowed_method[index]);
+}
+
+void    Location::setAutoIndex(string _auto_index)
+{
+    if (this->auto_index.size())
+        throw invalid_argument("Location::setAutoIndex key already initialised");
+    this->auto_index = _auto_index;
+}
+
+string  Location::getAutoIndex()
+{
+    return (this->auto_index);
+}
+
+size_t  Location::getIndexSize()
+{
+    return (this->index.size());
 }

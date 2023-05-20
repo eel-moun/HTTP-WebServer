@@ -106,57 +106,110 @@ void    sendResponse(const string& content, const string& content_type, const in
     ss << "Connection: close\r\n\r\n";
     ss << content;
     response = ss.str();
-    cout << response << endl;
     write(client_fd, response.c_str(), response.size());
 }
 
-// /www/var/piza.htm;
-// /www/
-
-// /www
-// /www/var
-
-const string checkPathLocation(string& req_path, Server& server)
+int  getRightLocation(string req_path, Server server)
 {
-    int j;
+    string  loc_path;
+    int temp = 0;
+    int j = -1;
+    int count = 0;
 
-    j = getLocationIndex(req_path, server);
-    if (!req_path.compare(server.getLocation(j)->getPath().append("/")))
-        return (server.getLocation(j)->getIndex());
-    else
-        for (size_t i = 0; i < server.getLocation(j)->getSize(); i++)
-            if (!server.getLocation(j)->getFile(i).compare(req_path.substr(server.getLocation(j)->getPath().size() + 1)))
-                return (server.getLocation(j)->getFile(i));
-    else
-        // error 404 page not found
-        throw runtime_error("error 404 page not found read file in GetMethod");
-    return ("");
+    for (size_t i = 0; i < server.getSize(); i++)
+    {
+        loc_path = server.getLocation(i)->getPath();
+        if (loc_path.compare("/"))
+            loc_path.append("/");
+
+        for (size_t z = 0; z < req_path.size() && z < loc_path.size() ; z++)
+        {
+            if (req_path[z] == loc_path[z])
+            {
+                if (req_path[z] == '/')
+                    count++;
+            }
+            else
+            {
+                count = 0;
+                break;
+            }
+        }
+
+        if(temp < count)
+        {
+            temp = count;
+            j = i;
+            count = 0;
+        }
+    }
+
+    return (j);
 }
 
+string  getRightRoot(Server server, int loc_pos)
+{
+    if (server.getLocation(loc_pos)->getRoot().size())
+       return (server.getLocation(loc_pos)->getRoot());
+    else if (server.getValue("root").size())
+        return (server.getValue("root"));
+    else
+        throw runtime_error("403 forbiden");
+}
 
-void    GetMethod(t_client& client, Server& server)
+string  getRightContent(int fd)
+{
+    int r = 1;
+    char buffer[1024];
+    string content;
+
+    while (r != 0)
+    {
+        bzero(buffer, 1024);
+        r = read(fd, buffer, 1023);
+        content.append(buffer, r);
+    }
+    return (content);
+}
+
+int    GetMethod(t_client& client, Server server)
 {
     string req_path;
-    string buffer;
-    string file_to_serve;
+    string path_to_serve;
+    string test_file;
+    int fd;
 
-    req_path = client.request["path"];
-    req_path = req_path.substr(1, req_path.find("?"));
+    req_path = client.request["path"].substr(0, req_path.find("?"));
+    int loc_pos = getRightLocation(req_path, server);
+    if (loc_pos == -1)
+            throw runtime_error("error 403 forbiden");
+    path_to_serve = getRightRoot(server, loc_pos);
+    if (req_path.substr(server.getLocation(loc_pos)->getPath().size()).size() == 0)
+    {
+    //////////////////------ get right index file ------////////////////////
+        test_file = path_to_serve;
+        for (size_t i = 0; i < server.getLocation(loc_pos)->getIndexSize(); i++)
+        {
+            fd = open(test_file.append("/").append(server.getLocation(loc_pos)->getIndex(i)).c_str(), O_RDONLY);
+            if (fd != -1)
+                    return (sendResponse(getRightContent(fd), getContentType(server.getLocation(loc_pos)->getIndex(i)), 200, client.new_sock_fd), 0);
+            test_file.substr(0, test_file.find_last_of("/"));
+        }
+        throw runtime_error("error 404 not found"); 
+    }
+    else
+    {
+        ////////////////------  check file   ------//////////////////
+        if (server.getLocation(loc_pos)->getPath().compare("/"))
+            path_to_serve = path_to_serve.append(req_path.substr(server.getLocation(loc_pos)->getPath().size()));
+        else
+            path_to_serve = path_to_serve.append(req_path);
 
-    file_to_serve = checkPathLocation(req_path, server);
-        // error code 404 page not found
-        // throw runtime_error("error 404 page not found read file in GetMethod");
-
-    ifstream check_path(req_path);
-    if (!check_path)
-        // error code 404 page not found
-        throw runtime_error("error 404 page not found read file in GetMethod");
-
-    if (!getline(check_path, buffer, '\0'))
-        throw runtime_error("error read file GetMethod");
-    
-    // i need to generate response
-    sendResponse(buffer, getContentType(req_path), 200, client.new_sock_fd);
+        fd = open(path_to_serve.c_str(), O_RDONLY);
+        if (fd != -1)
+            return (sendResponse(getRightContent(fd), getContentType(req_path), 200, client.new_sock_fd), 0);
+        throw runtime_error("error 404 not found");
+    }
 }
 
 void    PostMethod(t_client& client, Server& server)
@@ -181,7 +234,7 @@ void    PostMethod(t_client& client, Server& server)
 // void    DeleteMethod(t_client& client)
 // {}
 
-void    makeResponse(t_client& client, Server& server)
+void    makeResponse(t_client& client, Server server)
 {
     string method;
 
@@ -196,7 +249,7 @@ void    makeResponse(t_client& client, Server& server)
         // error code 405 method not allowed
 }
 
-Server& getRightServer(vector<Server *> servers, t_client& client)
+Server getRightServer(vector<Server *> servers, t_client client)
 {
     string host = client.request["host"];
     string port = client.request["port"];

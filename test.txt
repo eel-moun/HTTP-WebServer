@@ -1,0 +1,14 @@
+salam
+
+Server copy constructor called
+Server copy assignment operator called
+Server copy constructor called
+Server copy assignment operator called
+Server copy constructor called
+Server copy assignment operator called
+Server default destructor called 
+Server copy constructor called
+Server copy assignment operator called
+Server default destructor called 
+Server default destructor called 
+Server default destructor called 

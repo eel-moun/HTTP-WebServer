@@ -73,8 +73,8 @@ void ConfigFile::run_servers(){
                     cout << "client " << fds[i].fd << "disconnected" << endl;
                     close(fds[i].fd);
                     fds.erase(fds.begin() + i);
-
-                    //clients.erase(i - size);
+                    close(clients[i - size].new_sock_fd);
+                    clients.erase(clients.begin() + (i - size));
                     // delete client && erase client
                     i--;
                     continue;
