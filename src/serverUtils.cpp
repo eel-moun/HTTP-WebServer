@@ -37,5 +37,6 @@ void    Accept(vector<pollfd>& fds, vector<t_client>& clients, size_t i)
     fd.events = POLL_IN | POLL_OUT;
     fds.push_back(fd);
     client.new_sock_fd = clientFd;
+    client.body.clear();
     clients.push_back(client);
 }

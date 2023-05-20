@@ -9,7 +9,7 @@ PATH_OBJ = obj/
 
 CC = c++
 
-FLAGS = -Wall -Wextra -Werror -std=c++98 -g
+FLAGS = -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address
 
 OBJ = $(addprefix $(PATH_OBJ), $(SRC:.cpp=.o))
 

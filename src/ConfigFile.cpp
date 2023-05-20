@@ -46,7 +46,6 @@ void ConfigFile::run_servers(){
     char buffer[1024];
     string test;
 
-    bzero(buffer, 1024);
     for (size_t i = 0; i < size; i++)
     {
         getServer(i)->openServer();
@@ -71,8 +70,10 @@ void ConfigFile::run_servers(){
             else {
                 if (fds[i].revents & POLLHUP)
                 {
+                    cout << "client " << fds[i].fd << "disconnected" << endl;
                     close(fds[i].fd);
                     fds.erase(fds.begin() + i);
+
                     //clients.erase(i - size);
                     // delete client && erase client
                     i--;
@@ -81,10 +82,13 @@ void ConfigFile::run_servers(){
                 if (fds[i].revents & POLLIN)
                 {
                     //manage request && create response
-                    read(fds[i].fd, buffer, 1024);
-                    cout << buffer << endl;
+                    bzero(buffer, 1024);
+                    read(fds[i].fd, &buffer, 1023);
+                    //cout << buffer <<endl;
                     parseRequest(clients[i - size], buffer);
-                    makeResponse(clients[i - size], getRightServer(servers, clients[i - size]));
+                    //fillBody(clients[i - size], buffer);
+                    chunkedToNormal(clients[i - size], buffer);
+                    //makeResponse(clients[i - size], getRightServer(servers, clients[i - size]));
                     // cout << clients[i - size].request["lenght"] << endl;
                 }
                 if (fds[i].revents & POLLOUT)
