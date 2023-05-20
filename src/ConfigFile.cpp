@@ -34,6 +34,16 @@ size_t ConfigFile::getSize() const{
     return (size);
 }
 
+size_t     ConfigFile::getSocketNum()
+{
+    size_t i = 0;
+    for(size_t j = 0; j < size; j++)
+    {
+        i += servers[j]->get_sock_v().size();
+    }
+    return i;
+}
+
 void ConfigFile::setServer(){
     Server* srv = new Server();
     servers.push_back(srv);
@@ -50,11 +60,14 @@ void ConfigFile::run_servers(){
     for (size_t i = 0; i < size; i++)
     {
         getServer(i)->openServer();
-        pollfd _fd;
+        for(size_t j = 0; j < getServer(i)->get_sock_v().size(); j++)
+        {
+            pollfd _fd;
 
-        _fd.fd = getServer(i)->getSock_fd();
-        _fd.events = POLLIN | POLLOUT | POLLHUP;
-        fds.push_back(_fd);
+            _fd.fd = getServer(i)->getSock_fd(j);
+            _fd.events = POLLIN | POLLOUT | POLLHUP;
+            fds.push_back(_fd);
+        }
     }
     while (true)
     {
@@ -66,15 +79,15 @@ void ConfigFile::run_servers(){
         }
         for (size_t i = 0; i < fds.size(); i++)
         {
-            if ((fds[i].revents & POLLIN) && i < size)
+            if ((fds[i].revents & POLLIN) && i < getSocketNum())
                 Accept(fds, clients, i);
             else {
                 if (fds[i].revents & POLLHUP)
                 {
                     close(fds[i].fd);
                     fds.erase(fds.begin() + i);
-                    close(clients[i - 1].new_sock_fd);
-                    clients.erase(clients.begin() + (i - 1));
+                    close(clients[i - getSocketNum()].new_sock_fd);
+                    clients.erase(clients.begin() + (i - getSocketNum()));
                     // delete client && erase client
                     i--;
                     continue;
@@ -84,8 +97,8 @@ void ConfigFile::run_servers(){
                     //manage request && create response
                     read(fds[i].fd, buffer, 1024);
                     cout << buffer << endl;
-                    parseRequest(clients[i - size], buffer);
-                    makeResponse(clients[i - size], getRightServer(servers, clients[i - size]));
+                    parseRequest(clients[i - getSocketNum()], buffer);
+                    makeResponse(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
                     // cout << clients[i - size].request["lenght"] << endl;
                 }
                 if (fds[i].revents & POLLOUT)

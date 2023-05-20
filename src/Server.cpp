@@ -55,44 +55,71 @@ size_t Server::getSize() const{
 
 void    Server::openServer()
 {
-    setSock_fd();
     setServ_addr();
 }
 
-void Server::setSock_fd(){
+void Server::setServ_addr(){
     int opt;
 
     opt = 1;
-    sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    for (size_t i = 0; i < listens.size(); i++)
+    {
 
-    if (sock_fd < 0)
-        throw runtime_error("socket not initialised correctly");
+        struct sockaddr_in* addr = new struct sockaddr_in;
+        sock_fd.push_back(socket(AF_INET, SOCK_STREAM, 0));
 
-    if (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)))
-        throw runtime_error("Server::setSock_fd sockopt not set correctly");
-    
-    if (fcntl(sock_fd, F_SETFL, O_NONBLOCK) < 0)
-        throw runtime_error("Error while setiing O_NONOBLOCK...");
-}
+        if (sock_fd[i] < 0)
+            throw runtime_error("socket not initialised correctly");
 
-void Server::setServ_addr(){
+        if (setsockopt(sock_fd[i], SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)))
+            throw runtime_error("Server::setSock_fd sockopt not set correctly");
+        
+        if (fcntl(sock_fd[i], F_SETFL, O_NONBLOCK) < 0)
+            throw runtime_error("Error while setiing O_NONOBLOCK...");
 
-    serv_addr.sin_family = AF_INET;
-    
-    if (!this->getValue("host").compare("localhost")) // possible_error
-        serv_addr.sin_addr.s_addr = INADDR_ANY;
-    else
-        serv_addr.sin_addr.s_addr = ft_inet_addr(this->getValue("host")); // possible_error
-    serv_addr.sin_port = htons(stoi(this->getValue("listen")));
+        addr->sin_family = AF_INET;
+        if (!this->getValue("host").compare("localhost")) // possible_error
+            addr->sin_addr.s_addr = INADDR_ANY;
+        else
+            addr->sin_addr.s_addr = ft_inet_addr(this->getValue("host")); // possible_error
+        cout << listens[i] << endl;
+        addr->sin_port = htons(stoi(listens[i]));
 
-    if (bind(sock_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+
+        if (bind(sock_fd[i], reinterpret_cast<struct sockaddr*>(addr), sizeof(struct sockaddr_in)) < 0)
+        {
+        cout << strerror(errno) << endl;
         throw runtime_error("Server::setServ_addr couldn't bind");
+        }
 
-    if (listen(sock_fd, 10) < 0)
-        throw runtime_error("Server::setServ_addr couldn't listen");
+        if (listen(sock_fd[i], 10) < 0)
+            throw runtime_error("Server::setServ_addr couldn't listen");
+        serv_addr.push_back(addr);
+    }
 }
 
-int     Server::getSock_fd() const
+int     Server::getSock_fd(int index) const
 {
-    return (this->sock_fd);
+    return (sock_fd[index]);
+}
+
+void    Server::set_listens(string value)
+{
+    string token;
+
+    if (this->listens.size())
+        throw invalid_argument("Location::set_return key already initialised");
+    stringstream ss(value);
+    while (getline(ss, token, ' '))
+        this->listens.push_back(token);
+}
+
+vector<string>  Server::get_listens()
+{
+    return (this->listens);
+}
+
+vector<int>  Server::get_sock_v()
+{
+    return (sock_fd);
 }

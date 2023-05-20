@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <sstream>
 
 using namespace std;
 
@@ -12,6 +13,8 @@ class Location{
         vector<string> index;
         string root;
         string auto_index;
+        string upload_dir;
+        vector<string> _return;
         vector<string> allowed_method;
     
     public:
@@ -26,11 +29,15 @@ class Location{
         void    setRoot(string _root);
         void    setAutoIndex(string _auto_index);
         void    setAllowedMethod(string _method);
-        string  getAllowedMethod(size_t index);
+        void    set_upload_dir(string _upload_dir);
+        void    set_return(string value);
         string  getAutoIndex();
         string  getPath();
         string  getIndex(size_t index);
         string  getRoot();
         size_t  getIndexSize();
+        string  get_upload_dir();
+        vector<string>  getAllowedMethod();
+        vector<string> get_return();
 };
 #endif

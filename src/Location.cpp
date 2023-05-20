@@ -61,9 +61,9 @@ void    Location::setAllowedMethod(string _method)
     this->allowed_method.push_back(_method);
 }
 
-string  Location::getAllowedMethod(size_t index)
+vector<string>  Location::getAllowedMethod()
 {
-    return (this->allowed_method[index]);
+    return (this->allowed_method);
 }
 
 void    Location::setAutoIndex(string _auto_index)
@@ -81,4 +81,30 @@ string  Location::getAutoIndex()
 size_t  Location::getIndexSize()
 {
     return (this->index.size());
+}
+
+void    Location::set_upload_dir(string _upload_dir)
+{
+    this->upload_dir = _upload_dir;
+}
+
+string  Location::get_upload_dir()
+{
+    return (this->upload_dir);
+}
+
+void    Location::set_return(string value)
+{
+    string token;
+
+    if (this->_return.size())
+        throw invalid_argument("Location::set_return key already initialised");
+    stringstream ss(value);
+    while (getline(ss, token, ' '))
+        this->_return.push_back(token);
+}
+
+vector<string> Location::get_return()
+{
+    return (this->_return);
 }

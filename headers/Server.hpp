@@ -14,8 +14,9 @@ using namespace std;
 
 class Server{
     private:
-        int sock_fd;
-        struct sockaddr_in serv_addr;
+        vector<int> sock_fd;
+        vector<struct sockaddr_in*> serv_addr;
+        vector<string> listens;
         map<string , string> valueForKey;
         size_t size;
         vector<Location *> locations;
@@ -30,14 +31,15 @@ class Server{
 
         void    setValue(string key, string value);
         void    setLocation();
-        void    setSock_fd();
         void    setServ_addr();
-        int     getSock_fd() const;
+        int     getSock_fd(int index) const;
         string  getValue(string key);
+        vector<string>  get_listens();
         Location    *getLocation(size_t index) ;
         size_t      getSize() const;
         void        openServer();
-
+        void        set_listens(string value);
+        vector<int> get_sock_v();
 };
 
 #endif
