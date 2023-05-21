@@ -99,6 +99,7 @@ void ConfigFile::run_servers(){
                     read(fds[i].fd, &buffer, 1023);
                     //cout << buffer <<endl;
                     parseRequest(clients[i - getSocketNum()], buffer);
+                    fillBody(clients[i - getSocketNum()], buffer);
                     makeResponse(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
                     // cout << clients[i - size].request["lenght"] << endl;
                 }

@@ -106,7 +106,7 @@ void    sendResponse(const string& content, const string& content_type, const in
     ss << "Content-Length: " << content.size() << "\r\n";
     ss << "Connection: close\r\n\r\n";
     ss << content;
-    response = ss.str();
+    response = ss.str();0
     write(client_fd, response.c_str(), response.size());
 }
 
@@ -218,20 +218,28 @@ void    PostMethod(t_client& client, Server& server)
     string filename;
     std::ofstream postfile;
     int L = 0;
-    int i = 0;
+
+    cout << "WE ARE IN POST METHOD" << endl;
     //check the path of the Request and if post is allowed
     L = getRightLocation(client.request["path"], server);
-    if(!count(server.getLocation(L)->getAllowedMethod().begin(),server.getLocation(L)->getAllowedMethod().end(),"POST"))
-        {
+    cout << L << endl;
+    for (size_t i = 0; i < server.getLocation(L)->getAllowedMethod().size(); i++)
+        if (server.getLocation(L)->getAllowedMethod().at(i).compare("POST"))
+            if (i == server.getLocation(L)->getAllowedMethod().size() - 1)
+
+
+    if (!   count(server.getLocation(L)->getAllowedMethod().begin(),server.getLocation(L)->getAllowedMethod().end(),"POST"))
+    {
             //error METHOD NOT ALLOWED
-        }
+    }
     //<-------------------------------->
     //get the file name and create it
     filename = client.request["path"].substr(client.request["path"].find_last_of('/', string::npos));
     if(filename.size() == 0)
         filename = generateRandomString(10) + "." +client.request["Content-Type"];
-    filename = getRightRoot(server, L) + server.getLocation(L).get_upload_dir() + '/' + filename;
-    
+    filename = getRightRoot(server, L) + server.getLocation(L)->get_upload_dir() + filename;
+    cout << server.getLocation(L)->get_upload_dir() << endl;
+    cout<< filename <<endl;
     //<-------------------------------->
     //open the file and write the body to it
     postfile.open(filename);
@@ -249,7 +257,6 @@ void    DeleteMethod(t_client& client, Server server)
     struct dirent *pDirent;
     DIR *dir;
     int L = 0;
-    int i = 0;
     //check the path of the Request and if post is allowed
     L = getRightLocation(client.request["path"], server);
     if(!count(server.getLocation(L)->getAllowedMethod().begin(),server.getLocation(L)->getAllowedMethod().end(),"DELETE"))

@@ -114,3 +114,14 @@ void fillBody(t_client& client,string buffer)
     cout << client.request["lenght"] << endl;
     cout << client.new_sock_fd << endl;
 }
+
+string generateRandomString(int length) {
+    string randomString;
+    srand(time(NULL));
+
+    for (int i = 0; i < length; ++i) {
+        randomString += static_cast<char>('a' + rand() % 26);
+    }
+
+    return randomString;
+}
