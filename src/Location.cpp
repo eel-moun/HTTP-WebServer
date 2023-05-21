@@ -36,8 +36,13 @@ string Location::getPath(){
     return path;
 }
 
-void Location::setIndex(string _index){
-    this->index.push_back(_index);
+void Location::setIndex(string _index)
+{
+    string token;
+
+    stringstream ss(_index);
+    while (getline(ss, token, ' '))
+        this->index.push_back(token);
 }
 
 string Location::getIndex(size_t _index){
@@ -58,7 +63,11 @@ string  Location::getRoot()
 
 void    Location::setAllowedMethod(string _method)
 {
-    this->allowed_method.push_back(_method);
+    string token;
+
+    stringstream ss(_method);
+    while (getline(ss, token, ' '))
+        this->allowed_method.push_back(token);
 }
 
 vector<string>  Location::getAllowedMethod()
@@ -69,7 +78,7 @@ vector<string>  Location::getAllowedMethod()
 void    Location::setAutoIndex(string _auto_index)
 {
     if (this->auto_index.size())
-        throw invalid_argument("Location::setAutoIndex key already initialised");
+        throw invalid_argument("Location::setAutoIndex");
     this->auto_index = _auto_index;
 }
 
