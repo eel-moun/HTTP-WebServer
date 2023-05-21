@@ -219,20 +219,7 @@ void    PostMethod(t_client& client, Server& server)
     std::ofstream postfile;
     int L = 0;
 
-    cout << "WE ARE IN POST METHOD" << endl;
-    //check the path of the Request and if post is allowed
     L = getRightLocation(client.request["path"], server);
-    cout << L << endl;
-    for (size_t i = 0; i < server.getLocation(L)->getAllowedMethod().size(); i++)
-        if (server.getLocation(L)->getAllowedMethod().at(i).compare("POST"))
-            if (i == server.getLocation(L)->getAllowedMethod().size() - 1)
-
-
-    if (!   count(server.getLocation(L)->getAllowedMethod().begin(),server.getLocation(L)->getAllowedMethod().end(),"POST"))
-    {
-            //error METHOD NOT ALLOWED
-    }
-    //<-------------------------------->
     //get the file name and create it
     filename = client.request["path"].substr(client.request["path"].find_last_of('/', string::npos));
     if(filename.size() == 0)
@@ -307,3 +294,4 @@ Server getRightServer(vector<Server *> servers, t_client client)
 
     throw runtime_error("no server found");
 }
+
