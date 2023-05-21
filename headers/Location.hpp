@@ -26,7 +26,7 @@ class Location{
         void    setRoot(string _root);
         void    setAutoIndex(string _auto_index);
         void    setAllowedMethod(string _method);
-        string  getAllowedMethod(size_t index);
+        vector<string>  getAllowedMethod();
         string  getAutoIndex();
         string  getPath();
         string  getIndex(size_t index);

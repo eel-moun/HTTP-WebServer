@@ -32,7 +32,6 @@ void chunkedToNormal(t_client& client, string buffer)
 
     r = 0;
     len = -1;
-    cout << buffer << endl;
     buffer.erase(0, buffer.find("\r\n\r\n") + 4);
     while (buffer.compare(" q") && r != -1)
     {
@@ -67,8 +66,6 @@ void chunkedToNormal(t_client& client, string buffer)
             len = -1;
         }
     }
-    cout << client.body << endl;
-    cout << max_lenght << endl;
 }
 
 size_t getLocationIndex(string req_path, Server server)

@@ -61,9 +61,9 @@ void    Location::setAllowedMethod(string _method)
     this->allowed_method.push_back(_method);
 }
 
-string  Location::getAllowedMethod(size_t index)
+vector<string>  Location::getAllowedMethod()
 {
-    return (this->allowed_method[index]);
+    return (allowed_method);
 }
 
 void    Location::setAutoIndex(string _auto_index)

@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <fcntl.h>
+#include <algorithm>
 
 /*
 There are many different types of errors that can occur when handling a GET request. Here are some examples:
@@ -216,23 +217,54 @@ void    PostMethod(t_client& client, Server& server)
 {
     string filename;
     std::ofstream postfile;
+    int L = 0;
     int i = 0;
     //check the path of the Request and if post is allowed
-
+    L = getRightLocation(client.request["path"], server);
+    if(!count(server.getLocation(L)->getAllowedMethod().begin(),server.getLocation(L)->getAllowedMethod().end(),"POST"))
+        {
+            //error METHOD NOT ALLOWED
+        }
     //<-------------------------------->
     //get the file name and create it
-    filename = client.request["path"].substr(server.getLocation(i)->getPath().size() + 1);
+    filename = client.request["path"].substr(client.request["path"].find_last_of('/', string::npos));
     if(filename.size() == 0)
         filename = generateRandomString(10) + "." +client.request["Content-Type"];
+    filename = getRightRoot(server, L) + server.getLocation(L).get_upload_dir() + '/' + filename;
     
-
     //<-------------------------------->
-
     //open the file and write the body to it
+    postfile.open(filename);
+    if(postfile)
+        postfile << client.body;
+    else
+        // error failed to open file
+        return ;
 }
 
-// void    DeleteMethod(t_client& client)
-// {}
+void    DeleteMethod(t_client& client, Server server)
+{
+    string filename;
+    std::ofstream postfile;
+    struct dirent *pDirent;
+    DIR *dir;
+    int L = 0;
+    int i = 0;
+    //check the path of the Request and if post is allowed
+    L = getRightLocation(client.request["path"], server);
+    if(!count(server.getLocation(L)->getAllowedMethod().begin(),server.getLocation(L)->getAllowedMethod().end(),"DELETE"))
+    {
+            //error METHOD NOT ALLOWED
+    }
+    filename = getRightRoot(server, L) + client.request["path"].substr(server.getLocation(L)->getPath().size());
+    dir = opendir(filename.c_str());
+    if(dir != NULL)
+    {
+        while((pDirent = readdir(dir)) != NULL)
+            remove(pDirent->d_name);// might need to add the dir path if d_name is only the file name
+    }
+    remove(filename.c_str());
+}
 
 void    makeResponse(t_client& client, Server server)
 {
@@ -241,10 +273,10 @@ void    makeResponse(t_client& client, Server server)
     method = client.request["method"];
     if (method == "GET")
         GetMethod(client, server);
-    // else if (method == "POST")
-    //     PostMethod(client);
-    // else if (method == "DELETE")
-    //     DeleteMethod(client);
+    else if (method == "POST")
+        PostMethod(client, server);
+    else if (method == "DELETE")
+        DeleteMethod(client, server);
     //else
         // error code 405 method not allowed
 }

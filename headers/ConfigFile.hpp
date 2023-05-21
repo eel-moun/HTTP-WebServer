@@ -3,8 +3,10 @@
 
 #include "Server.hpp"
 #include <exception>
+#include <algorithm>
 #include "Client.hpp"
 #include "ServerUtils.hpp"
+#include <dirent.h>
 #include <random>
 
 using namespace std;
