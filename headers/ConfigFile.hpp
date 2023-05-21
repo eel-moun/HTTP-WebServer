@@ -26,6 +26,7 @@ class ConfigFile{
         void setServer();
         void run_servers();
         size_t getSize() const;
+        size_t    getSocketNum();
 };
 
 void            parseRequest(t_client& client, string buffer);

@@ -19,50 +19,71 @@ int keyValue(string line, ConfigFile& config)
 
 void fillConfigFile(string key, string value, ConfigFile& config)
 {
-    array<string, 16> keys = {"listen", "host","error_page400", "error_page402", "error_page403", "error_page404", "error_page500", "error_page501", "max_size", "server", "location", "path", "index", "root", "allowed_method"};
+    array<string, 13> keys = {"host", "default_error", "max_size", "listen", "server", "location", "path", "index", "root", "allowed_method", "autoindex", "upload_dir", "return"};
     int i = 0;
-    int index = config.getSize();
-    size_t index2;
+    int ser_size = config.getSize();
+    size_t loc_size;
 
-    if (index > 0)
-        index2 = config.getServer(index - 1)->getSize();
+    if (ser_size > 0)
+        loc_size = config.getServer(ser_size - 1)->getSize();
 
-    while (i <= 13 && key.compare(keys[i]))
+    while (i <= 11 && key.compare(keys[i]))
         i++;
+    
+    if (i <= 2)
+        config.getServer(ser_size - 1)->setValue(key, value);
 
-    if (i < 9)
-        config.getServer(index - 1)->setValue(key, value);
-    else {
-        switch (i)
+    else switch (i)
+    {
         {
-            case 9:
+            case 3:
+                config.getServer(ser_size - 1)->set_listens(value);
+                break;
+            case 4:
                 config.setServer();
                 break;
-            case 10:
-                config.getServer(index - 1)->setLocation();
+            case 5:
+                config.getServer(ser_size - 1)->setLocation();
                 break;
-            case 11:
-                if(index2 == 0)
+            case 6:
+                if (loc_size == 0)
                     throw invalid_argument("declare a location");
                 else if (value.substr(value.size() - 1) == "/" && value.size() != 1)
                     throw invalid_argument("can't be '/' in end of path");
-                config.getServer(index - 1)->getLocation(index2 - 1)->setPath(value);
+                config.getServer(ser_size - 1)->getLocation(loc_size - 1)->setPath(value);
                 break;
-            case 12:
-                config.getServer(index - 1)->getLocation(index2 - 1)->setIndex(value);
+            case 7:
+                if (loc_size == 0)
+                    throw invalid_argument("declare a location");
+                config.getServer(ser_size - 1)->getLocation(loc_size - 1)->setIndex(value);
                 break;
-            case 13:
-                if(index2 == 0)
+            case 8:
+                if (loc_size == 0)
                 {
-                    config.getServer(index - 1)->setValue(key, value);
+                    config.getServer(ser_size - 1)->setValue(key, value);
                     break;
                 }
-                config.getServer(index - 1)->getLocation(index2 - 1)->setRoot(value);
+                config.getServer(ser_size - 1)->getLocation(loc_size - 1)->setRoot(value);
                 break;
-            case 14:
-                if (index2 == 0)
+            case 9:
+                if (loc_size == 0)
                     throw invalid_argument("declare a location");
-                config.getServer(index - 1)->getLocation(index2 - 1)->setAllowedMethod(value);
+                config.getServer(ser_size - 1)->getLocation(loc_size - 1)->setAllowedMethod(value);
+                break;
+            case 10:
+                if (loc_size == 0)
+                    throw invalid_argument("declare a location");
+                config.getServer(ser_size - 1)->getLocation(loc_size - 1)->setAutoIndex(value);
+                break;
+            case 11:
+                if (loc_size == 0)
+                    throw invalid_argument("declare a location");
+                config.getServer(ser_size - 1)->getLocation(loc_size - 1)->set_upload_dir(value);
+                break;
+            case 12:
+                if (loc_size == 0)
+                    throw invalid_argument("declare a location");
+                config.getServer(ser_size - 1)->getLocation(loc_size - 1)->set_return(value);
                 break;
             default:
                 cout << key << endl;
