@@ -29,7 +29,7 @@ void fillConfigFile(string key, string value, ConfigFile& config)
 
     while (i <= 11 && key.compare(keys[i]))
         i++;
-    
+
     if (i <= 2)
         config.getServer(ser_size - 1)->setValue(key, value);
 

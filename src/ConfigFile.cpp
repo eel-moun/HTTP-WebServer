@@ -59,7 +59,7 @@ void ConfigFile::run_servers(){
     for (size_t i = 0; i < size; i++)
     {
         getServer(i)->openServer();
-        for(size_t j = 0; j < getServer(i)->get_sock_v().size(); j++)
+        for (size_t j = 0; j < getServer(i)->get_sock_v().size(); j++)
         {
             pollfd _fd;
 
@@ -72,7 +72,7 @@ void ConfigFile::run_servers(){
     {
         fds.shrink_to_fit();
         clients.shrink_to_fit();
-        if(poll(fds.data(), fds.size(), -1) < 0)
+        if (poll(fds.data(), fds.size(), -1) < 0)
         {
             //error
         }
@@ -99,9 +99,9 @@ void ConfigFile::run_servers(){
                     read(fds[i].fd, &buffer, 1023);
                     //cout << buffer <<endl;
                     parseRequest(clients[i - getSocketNum()], buffer);
-                    fillBody(clients[i - getSocketNum()], buffer);
+                    normalBody(clients[i - getSocketNum()], buffer);
+                    //fillBody(clients[i - getSocketNum()], buffer);
                     makeResponse(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
-                    // cout << clients[i - size].request["lenght"] << endl;
                 }
                 if (fds[i].revents & POLLOUT)
                 {

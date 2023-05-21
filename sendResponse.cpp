@@ -106,7 +106,7 @@ void    sendResponse(const string& content, const string& content_type, const in
     ss << "Content-Length: " << content.size() << "\r\n";
     ss << "Connection: close\r\n\r\n";
     ss << content;
-    response = ss.str();0
+    response = ss.str();
     write(client_fd, response.c_str(), response.size());
 }
 
@@ -259,16 +259,18 @@ void    DeleteMethod(t_client& client, Server server)
     int L = 0;
     //check the path of the Request and if post is allowed
     L = getRightLocation(client.request["path"], server);
-    if(!count(server.getLocation(L)->getAllowedMethod().begin(),server.getLocation(L)->getAllowedMethod().end(),"DELETE"))
+    /*if(!count(server.getLocation(L)->getAllowedMethod().begin(),server.getLocation(L)->getAllowedMethod().end(),"DELETE"))
     {
             //error METHOD NOT ALLOWED
-    }
+    }*/
     filename = getRightRoot(server, L) + client.request["path"].substr(server.getLocation(L)->getPath().size());
     dir = opendir(filename.c_str());
     if(dir != NULL)
     {
         while((pDirent = readdir(dir)) != NULL)
-            remove(pDirent->d_name);// might need to add the dir path if d_name is only the file name
+        {
+            remove((filename +'/'+ pDirent->d_name).c_str());
+        }
     }
     remove(filename.c_str());
 }

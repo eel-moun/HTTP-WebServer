@@ -38,11 +38,12 @@ const string    getErrorByCode(const int error_code);
 string          getContentType(const string& path);
 //size_t          getLocationIndex(string& req_path, Server& server);
 string          generateRandomString(int length);
-void            fillBody(t_client& client,string buffer);
+void            normalBody(t_client& client,string buffer);
 void            chunkedToNormal(t_client& client, string buffer);
 int             getRightLocation(string req_path, Server server);
 Server          getRightServer(vector<Server *> Servers, t_client client);
 string          getRightContent(int fd);
 string          getRightRoot(Server server, int loc_pos);
+void            fillBody(t_client& client,string buffer);
 
 #endif

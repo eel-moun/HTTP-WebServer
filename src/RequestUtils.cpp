@@ -91,7 +91,7 @@ size_t getLocationIndex(string req_path, Server server)
     return j;
 }
 
-void fillBody(t_client& client,string buffer)
+void normalBody(t_client& client,string buffer)
 {
     int r;
     char buffer1[1024];
@@ -124,4 +124,15 @@ string generateRandomString(int length) {
     }
 
     return randomString;
+}
+
+void fillBody(t_client& client,string buffer)
+{
+    if(client.request["lenght"].size())
+        normalBody(client, buffer);
+    else if(!client.request["Transfer-Encoding"].compare("chunked"))
+        chunkedToNormal(client, buffer);
+    //else
+        // error Bad request
+
 }
