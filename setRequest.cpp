@@ -48,4 +48,13 @@ void    parseRequest(t_client& client, string buffer)
             client.request.insert(pair<string, string>("lenght", str));
     }
 
+    stringstream ss4(lineToParse("Transfer-Encoding", buffer));
+    if (getline(ss4, str, ' '))
+    {
+        if (str.compare("Transfer-Encoding:"))
+            throw runtime_error("unwanted value");
+        if (getline(ss4, str, ' '))
+            client.request.insert(pair<string, string>("Transfer-Encoding", str));
+    }
+
 }

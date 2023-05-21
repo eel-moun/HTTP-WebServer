@@ -98,6 +98,7 @@ void ConfigFile::run_servers(){
                     read(fds[i].fd, buffer, 1024);
                     cout << buffer << endl;
                     parseRequest(clients[i - getSocketNum()], buffer);
+                    cout << clients[0].request["Transfer-Encoding"] << endl;
                     makeResponse(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
                     // cout << clients[i - size].request["lenght"] << endl;
                 }
