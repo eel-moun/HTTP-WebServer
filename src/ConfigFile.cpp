@@ -53,7 +53,7 @@ void ConfigFile::setServer(){
 void ConfigFile::run_servers(){
     vector<pollfd> fds;
     vector<Client> clients;
-    char buffer[1024];
+    char buffer[10024];
     string test;
 
     for (size_t i = 0; i < size; i++)
@@ -95,12 +95,11 @@ void ConfigFile::run_servers(){
                 if (fds[i].revents & POLLIN)
                 {
                     //manage request && create response
-                    bzero(buffer, 1024);
-                    read(fds[i].fd, &buffer, 1023);
-                    //cout << buffer <<endl;
+                    bzero(buffer, 10024);
+                    read(fds[i].fd, &buffer, 10023);
+                    cout << buffer << endl;
                     parseRequest(clients[i - getSocketNum()], buffer);
-                    normalBody(clients[i - getSocketNum()], buffer);
-                    //fillBody(clients[i - getSocketNum()], buffer);
+                    fillBody(clients[i - getSocketNum()], buffer);
                     makeResponse(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
                 }
                 if (fds[i].revents & POLLOUT)

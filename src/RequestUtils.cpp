@@ -13,11 +13,14 @@ string lineToParse(string key, string buffer){
     buffer.erase(0,pos+2);
     while (buffer.at(0) != '\r')
     {
+        cout << key << endl;
         pos = buffer.find("\r\n");
-        res = buffer.substr(0,pos);
+        cout << pos << endl;
+        res = buffer.substr(0, pos);
+        cout << res << endl;
         if(res.find(key) != string::npos)
             return res;
-        buffer.erase(0,pos+2);
+        buffer.erase(0, pos + 2);
     }
     return "";
 }
@@ -33,7 +36,7 @@ void chunkedToNormal(t_client& client, string buffer)
     r = 0;
     len = -1;
     buffer.erase(0, buffer.find("\r\n\r\n") + 4);
-    while (buffer.compare(" q") && r != -1)
+    while (r != -1)
     {
         if(buffer.find("\r\n") == 0)
             buffer.erase(0,2);
@@ -58,7 +61,7 @@ void chunkedToNormal(t_client& client, string buffer)
 
         if(len == -1 && tmp.size())
         {
-            len = stoi(tmp, 0, 16);
+            len = std::stol(tmp, 0, 16);
         }
         else{
             client.body += tmp;
@@ -94,25 +97,25 @@ size_t getLocationIndex(string req_path, Server server)
 void normalBody(t_client& client,string buffer)
 {
     int r;
-    char buffer1[1024];
+    char buffer1[50024];
+    size_t lenght = strtol(client.request["lenght"].c_str(),0,10);
+    size_t lenght2;
 
     buffer.erase(0, buffer.find("\r\n\r\n") + 4);
     r = 0;
     client.body += buffer;
-    while(r != -1)
+    while(client.body.size() < lenght)
     {
-        bzero(buffer1,1024);
-        r = read(client.new_sock_fd, buffer1, 1023);
-        cout << "<------------------------>" << endl;
-        cout << buffer1 << endl;
+        bzero(buffer1,10024);
+        r = read(client.new_sock_fd, buffer1, 10023);
         client.body += buffer1;
+        lenght2 = client.body.size();
+        if(r == -1)
+            {
+                cout << lenght2 << endl;
+            }
     }
-    cout << "<------------------------>" << endl;
-    cout << client.body << endl;
-    cout << "<------------------------>" << endl;
-    cout << client.body.size() << endl;
-    cout << client.request["lenght"] << endl;
-    cout << client.new_sock_fd << endl;
+    cout << client.body.size() << "||" << client.request["lenght"] << endl;
 }
 
 string generateRandomString(int length) {

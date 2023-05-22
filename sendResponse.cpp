@@ -96,18 +96,22 @@ const string    getErrorByCode(const int error_code)
     }
 }
 
-void    sendResponse(const string& content, const string& content_type, const int error_code, const int client_fd)
+void    sendResponse(const string& content, const string& content_type, const int error_code, t_client& client)
 {
     string response;
     stringstream ss;
 
     ss << "HTTP/1.1 " << error_code << getErrorByCode(error_code) << "\r\n";
-    ss << "Content-Type: " << content_type << "\r\n";
-    ss << "Content-Length: " << content.size() << "\r\n";
-    ss << "Connection: close\r\n\r\n";
+    if (client.request["method"].compare("GET"))
+    {
+        ss << "Content-Type: " << content_type << "\r\n";
+        ss << "Content-Length: " << content.size() << "\r\n";
+        ss << "Connection: close\r\n\r\n";
+    }
+
     ss << content;
-    response = ss.str();
-    write(client_fd, response.c_str(), response.size());
+    client.response = ss.str();
+
 }
 
 int  getRightLocation(string req_path, Server server)
@@ -173,6 +177,14 @@ string  getRightContent(int fd)
     return (content);
 }
 
+int checkIfMethodAllowed(vector<string> allowedMethod, string method)
+{
+    for (size_t i = 0; i < allowedMethod.size(); i++)
+        if (!allowedMethod.at(i).compare(method))
+            return 1;
+    return 0;
+}
+
 int    GetMethod(t_client& client, Server server)
 {
     string req_path;
@@ -193,7 +205,7 @@ int    GetMethod(t_client& client, Server server)
         {
             fd = open(test_file.append("/").append(server.getLocation(loc_pos)->getIndex(i)).c_str(), O_RDONLY);
             if (fd != -1)
-                    return (sendResponse(getRightContent(fd), getContentType(server.getLocation(loc_pos)->getIndex(i)), 200, client.new_sock_fd), 0);
+                    return (sendResponse(getRightContent(fd), getContentType(server.getLocation(loc_pos)->getIndex(i)), 200, client), 0);
             test_file.substr(0, test_file.find_last_of("/"));
         }
         throw runtime_error("error 404 not found"); 
@@ -208,7 +220,7 @@ int    GetMethod(t_client& client, Server server)
 
         fd = open(path_to_serve.c_str(), O_RDONLY);
         if (fd != -1)
-            return (sendResponse(getRightContent(fd), getContentType(req_path), 200, client.new_sock_fd), 0);
+            return (sendResponse(getRightContent(fd), getContentType(req_path), 200, client), 0);
         throw runtime_error("error 404 not found");
     }
 }
@@ -267,14 +279,18 @@ void    makeResponse(t_client& client, Server server)
     string method;
 
     method = client.request["method"];
-    if (method == "GET")
-        GetMethod(client, server);
-    else if (method == "POST")
-        PostMethod(client, server);
-    else if (method == "DELETE")
-        DeleteMethod(client, server);
+    if (checkIfMethodAllowed(server.getLocation(getRightLocation(client.request["path"].substr(0, client.request["path"].find('?')),
+        server))->getAllowedMethod(), method))
+    {
+        if (method == "GET")
+            GetMethod(client, server);
+        else if (method == "POST")
+            PostMethod(client, server);
+        else if (method == "DELETE")
+            DeleteMethod(client, server);
+    }
     //else
-        // error code 405 method not allowed
+    // error code 405 method not allowed
 }
 
 Server getRightServer(vector<Server *> servers, t_client client)
