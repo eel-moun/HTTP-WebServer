@@ -13,11 +13,8 @@ string lineToParse(string key, string buffer){
     buffer.erase(0,pos+2);
     while (buffer.at(0) != '\r')
     {
-        cout << key << endl;
         pos = buffer.find("\r\n");
-        cout << pos << endl;
         res = buffer.substr(0, pos);
-        cout << res << endl;
         if(res.find(key) != string::npos)
             return res;
         buffer.erase(0, pos + 2);
@@ -49,7 +46,7 @@ void chunkedToNormal(t_client& client, string buffer)
             {   
                 bzero(buffer1,1024);
                 r = read(client.new_sock_fd, buffer1, 1023);
-                buffer += buffer1;
+                buffer += string(buffer1,r);
             }
             tmp += buffer.substr(0, buffer.find("\r\n"));
             buffer.erase(0, buffer.find("\r\n") + 2);
@@ -97,22 +94,33 @@ size_t getLocationIndex(string req_path, Server server)
 void normalBody(t_client& client,string buffer)
 {
     int r;
-    char buffer1[50024];
+    char buffer1[1024];
     size_t lenght = strtol(client.request["lenght"].c_str(),0,10);
-    size_t lenght2;
+    size_t lenght2 = 0;
 
-    buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+
+    if(client.body.size() == 0)
+    {
+        cout << buffer.find("\r\n\r\n")<< endl;
+        buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+    }
     r = 0;
     client.body += buffer;
     while(client.body.size() < lenght)
     {
-        bzero(buffer1,10024);
-        r = read(client.new_sock_fd, buffer1, 10023);
-        client.body += buffer1;
+        bzero(buffer1,1024);
+        r = read(client.new_sock_fd, buffer1, 1023);
+        if (r >= 0)
+        client.body += string(buffer1,r);
+        // cout << buffer1 << endl;
+        // cout << lenght2 << endl;
         lenght2 = client.body.size();
         if(r == -1)
             {
+                cout << strerror(errno) << endl;
+                cout << client.body << endl;
                 cout << lenght2 << endl;
+                return ;
             }
     }
     cout << client.body.size() << "||" << client.request["lenght"] << endl;

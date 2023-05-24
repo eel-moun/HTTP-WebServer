@@ -53,7 +53,8 @@ void ConfigFile::setServer(){
 void ConfigFile::run_servers(){
     vector<pollfd> fds;
     vector<Client> clients;
-    char buffer[10024];
+    size_t r;
+    char buffer[1024];
     string test;
 
     for (size_t i = 0; i < size; i++)
@@ -72,17 +73,23 @@ void ConfigFile::run_servers(){
     {
         fds.shrink_to_fit();
         clients.shrink_to_fit();
+        cout << "we are fcked" << endl;
         if (poll(fds.data(), fds.size(), -1) < 0)
         {
+            cout << "we are fcked 1" << endl;
             //error
         }
         for (size_t i = 0; i < fds.size(); i++)
         {
             if ((fds[i].revents & POLLIN) && i < getSocketNum())
+            {
+                cout << "we are fcked 2" << endl;
                 Accept(fds, clients, i);
+            }
             else {
                 if (fds[i].revents & POLLHUP)
                 {
+                    cout << "we are fcked 3" << endl;
                     cout << "client " << fds[i].fd << "disconnected" << endl;
                     close(fds[i].fd);
                     fds.erase(fds.begin() + i);
@@ -95,15 +102,15 @@ void ConfigFile::run_servers(){
                 if (fds[i].revents & POLLIN)
                 {
                     //manage request && create response
-                    bzero(buffer, 10024);
-                    read(fds[i].fd, &buffer, 10023);
-                    cout << buffer << endl;
-                    parseRequest(clients[i - getSocketNum()], buffer);
-                    fillBody(clients[i - getSocketNum()], buffer);
+                    bzero(buffer, 1024);
+                    r = read(fds[i].fd, &buffer, 1023);
+                    parseRequest(clients[i - getSocketNum()], string(buffer,r));
+                    fillBody(clients[i - getSocketNum()], string(buffer,r));
                     makeResponse(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
                 }
                 if (fds[i].revents & POLLOUT)
                 {
+                    cout << "we are fcked 5" << endl;
                     // send response
                 }
             }

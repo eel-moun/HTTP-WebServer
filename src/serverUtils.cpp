@@ -29,10 +29,10 @@ void    Accept(vector<pollfd>& fds, vector<t_client>& clients, size_t i)
    pollfd   fd;
    int      clientFd;
 
+    fcntl(fds[i].fd, F_SETFL, O_NONBLOCK);
     if ((clientFd = accept(fds[i].fd ,NULL ,NULL)) < 0)
         throw runtime_error("couldn't accpet client");
 
-    fcntl(clientFd, F_SETFL, O_NONBLOCK);
     fd.fd = clientFd;
     fd.events = POLL_IN | POLL_OUT;
     fds.push_back(fd);

@@ -71,7 +71,7 @@ void Server::setServ_addr(){
         if (sock_fd[i] < 0)
             throw runtime_error("socket not initialised correctly");
 
-        if (setsockopt(sock_fd[i], SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)))
+        if (setsockopt(sock_fd[i], SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) < 0)
             throw runtime_error("Server::setSock_fd sockopt not set correctly");
         
         if (fcntl(sock_fd[i], F_SETFL, O_NONBLOCK) < 0)

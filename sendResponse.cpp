@@ -228,8 +228,9 @@ int    GetMethod(t_client& client, Server server)
 void    PostMethod(t_client& client, Server& server)
 {
     string filename;
-    std::ofstream postfile;
     int L = 0;
+    std::ofstream postfile;
+    stringstream ss;
 
     L = getRightLocation(client.request["path"], server);
     //get the file name and create it
@@ -241,12 +242,13 @@ void    PostMethod(t_client& client, Server& server)
     cout<< filename <<endl;
     //<-------------------------------->
     //open the file and write the body to it
-    postfile.open(filename);
+    postfile.open(filename,std::ios::binary);
+    cout << client.body << endl;
+    cout << client.body.size() << endl;
+    ss << client.body;
     if(postfile)
-        postfile << client.body;
-    else
-        // error failed to open file
-        return ;
+        postfile << ss.str();
+        //return ;
 }
 
 void    DeleteMethod(t_client& client, Server server)
