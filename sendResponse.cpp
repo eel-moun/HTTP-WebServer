@@ -230,7 +230,6 @@ void    PostMethod(t_client& client, Server& server)
     string filename;
     int L = 0;
     std::ofstream postfile;
-    stringstream ss;
 
     L = getRightLocation(client.request["path"], server);
     //get the file name and create it
@@ -238,16 +237,16 @@ void    PostMethod(t_client& client, Server& server)
     if(filename.size() == 0)
         filename = generateRandomString(10) + "." +client.request["Content-Type"];
     filename = getRightRoot(server, L) + server.getLocation(L)->get_upload_dir() + filename;
-    cout << server.getLocation(L)->get_upload_dir() << endl;
-    cout<< filename <<endl;
+    // cout << server.getLocation(L)->get_upload_dir() << endl;
+    // cout<< filename <<endl;
     //<-------------------------------->
     //open the file and write the body to it
     postfile.open(filename,std::ios::binary);
-    cout << client.body << endl;
-    cout << client.body.size() << endl;
-    ss << client.body;
+    // cout << client.body << endl;
+    // cout << client.body.size() << endl;
+    cout << client.body.find("\r\n") << endl;
     if(postfile)
-        postfile << ss.str();
+        postfile.write(client.body.c_str(), client.body.find("\r\n"));
         //return ;
 }
 

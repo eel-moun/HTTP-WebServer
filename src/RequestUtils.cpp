@@ -102,7 +102,10 @@ void normalBody(t_client& client,string buffer)
     if(client.body.size() == 0)
     {
         cout << buffer.find("\r\n\r\n")<< endl;
+        // cout << buffer << endl;
         buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+        buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+        // cout << buffer << endl;
     }
     r = 0;
     client.body += buffer;
@@ -117,13 +120,13 @@ void normalBody(t_client& client,string buffer)
         lenght2 = client.body.size();
         if(r == -1)
             {
-                cout << strerror(errno) << endl;
-                cout << client.body << endl;
-                cout << lenght2 << endl;
+                // cout << strerror(errno) << endl;
+                // cout << client.body << endl;
+                // cout << lenght2 << endl;
                 return ;
             }
     }
-    cout << client.body.size() << "||" << client.request["lenght"] << endl;
+    // cout << client.body.size() << "||" << client.request["lenght"] << endl;
 }
 
 string generateRandomString(int length) {
