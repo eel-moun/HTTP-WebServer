@@ -73,23 +73,19 @@ void ConfigFile::run_servers(){
     {
         fds.shrink_to_fit();
         clients.shrink_to_fit();
-        cout << "we are fcked" << endl;
         if (poll(fds.data(), fds.size(), -1) < 0)
         {
-            cout << "we are fcked 1" << endl;
             //error
         }
         for (size_t i = 0; i < fds.size(); i++)
         {
             if ((fds[i].revents & POLLIN) && i < getSocketNum())
             {
-                cout << "we are fcked 2" << endl;
                 Accept(fds, clients, i);
             }
             else {
                 if (fds[i].revents & POLLHUP)
                 {
-                    cout << "we are fcked 3" << endl;
                     cout << "client " << fds[i].fd << "disconnected" << endl;
                     close(fds[i].fd);
                     fds.erase(fds.begin() + i);
@@ -110,7 +106,6 @@ void ConfigFile::run_servers(){
                 }
                 if (fds[i].revents & POLLOUT)
                 {
-                    cout << "we are fcked 5" << endl;
                     // send response
                 }
             }
