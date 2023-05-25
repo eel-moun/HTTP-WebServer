@@ -53,9 +53,9 @@ void ConfigFile::setServer(){
 void ConfigFile::run_servers(){
     vector<pollfd> fds;
     vector<Client> clients;
-    size_t r;
+    int r;
     char buffer[1024];
-    string test;
+    size_t w = 0;
 
     for (size_t i = 0; i < size; i++)
     {
@@ -64,6 +64,7 @@ void ConfigFile::run_servers(){
         {
             pollfd _fd;
 
+            fcntl(getServer(i)->getSock_fd(j), F_SETFL, O_NONBLOCK);
             _fd.fd = getServer(i)->getSock_fd(j);
             _fd.events = POLLIN | POLLOUT | POLLHUP;
             fds.push_back(_fd);
@@ -75,7 +76,8 @@ void ConfigFile::run_servers(){
         clients.shrink_to_fit();
         if (poll(fds.data(), fds.size(), -1) < 0)
         {
-            //error
+            cout << strerror(errno) << endl;
+            exit(1);
         }
         for (size_t i = 0; i < fds.size(); i++)
         {
@@ -83,31 +85,42 @@ void ConfigFile::run_servers(){
             {
                 Accept(fds, clients, i);
             }
-            else {
+            else
+            {
                 if (fds[i].revents & POLLHUP)
                 {
-                    cout << "client " << fds[i].fd << "disconnected" << endl;
+                    cout << "client " << fds[i].fd << " disconnected" << endl;
                     close(fds[i].fd);
                     fds.erase(fds.begin() + i);
-                    close(clients[i - getSocketNum()].new_sock_fd);
                     clients.erase(clients.begin() + (i - getSocketNum()));
-                    // delete client && erase client
                     i--;
                     continue;
                 }
-                if (fds[i].revents & POLLIN)
+                if (fds[i].revents & POLLIN && !clients[i - getSocketNum()].response.size())
                 {
-                    //manage request && create response
                     bzero(buffer, 1024);
                     r = read(fds[i].fd, &buffer, 1023);
-                    parseRequest(clients[i - getSocketNum()], string(buffer,r));
-                    fillBody(clients[i - getSocketNum()], string(buffer,r));
-                    makeResponse(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
+                    cout << buffer << endl;
+                    if (!clients[i - getSocketNum()].body.size())
+                        parseRequest(clients[i - getSocketNum()], string(buffer, r));
+                    if (!clients[i - getSocketNum()].response.size())
+                        fillBody(clients[i - getSocketNum()], string(buffer,r));
+                        //cout << clients[i - getSocketNum()].body.size() << endl;
+                    if (!clients[i - getSocketNum()].response.size())
+                        makeResponse(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
+                    cout << clients[i - getSocketNum()].response.size() << endl;
+                    // cout << clients[i - getSocketNum()].response << endl;
                 }
-                if (fds[i].revents & POLLOUT)
+                if (fds[i].revents & POLLOUT && clients[i - getSocketNum()].response.size())
                 {
-                    // send response
+                    while (w < clients[i - getSocketNum()].response.size())
+                    {
+                        r = send(fds[i].fd, clients[i - getSocketNum()].response.c_str() + w , clients[i - getSocketNum()].response.size() - w, 0);
+                        if (r != -1)
+                            w += r;
+                    }
                 }
+
             }
         }
     }

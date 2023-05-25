@@ -8,6 +8,12 @@
 #include "ServerUtils.hpp"
 #include <dirent.h>
 #include <random>
+#include <iostream>
+#include <sstream>
+#include <unistd.h>
+#include <fstream>
+#include <fcntl.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -33,17 +39,13 @@ void            parseRequest(t_client& client, string buffer);
 string          lineToParse(string key, string buffer);
 void            makeResponse(t_client& client, Server server);
 int             GetMethod(t_client& client, Server server);
-void            sendResponse(const string& content, const string& content_type, const int error_code, const int client_fd);
-const string    getErrorByCode(const int error_code);
+void            PostMethod(t_client& client, Server& server);
+void            DeleteMethod(t_client& client, Server server);
+void            GenerateResponse(const string& content, const string& content_type, const int status_code, t_client& client);
 string          getContentType(const string& path);
-//size_t          getLocationIndex(string& req_path, Server& server);
 string          generateRandomString(int length);
 void            normalBody(t_client& client,string buffer);
 void            chunkedToNormal(t_client& client, string buffer);
-int             getRightLocation(string req_path, Server server);
-Server          getRightServer(vector<Server *> Servers, t_client client);
-string          getRightContent(int fd);
-string          getRightRoot(Server server, int loc_pos);
 void            fillBody(t_client& client,string buffer);
 
 #endif

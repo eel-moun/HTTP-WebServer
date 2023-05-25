@@ -7,6 +7,7 @@
 typedef struct Client
 {
     int new_sock_fd;
+    int status_code;
     std::map<std::string, std::string> request;
     string body;
     std::string response;
