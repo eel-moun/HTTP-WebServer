@@ -98,7 +98,6 @@ void normalBody(t_client& client,string buffer)
     size_t lenght = strtol(client.request["lenght"].c_str(),0,10);
     size_t lenght2 = 0;
 
-
     if(client.body.size() == 0)
     {
         cout << buffer.find("\r\n\r\n")<< endl;
@@ -116,12 +115,12 @@ void normalBody(t_client& client,string buffer)
         // cout << lenght2 << endl;
         lenght2 = client.body.size();
         if(r == -1)
-            {
-                cout << strerror(errno) << endl;
-                cout << client.body << endl;
-                cout << lenght2 << endl;
-                return ;
-            }
+        {
+            cout << strerror(errno) << endl;
+            cout << client.body << endl;
+            cout << lenght2 << endl;
+            return ;
+        }
     }
     cout << client.body.size() << "||" << client.request["lenght"] << endl;
 }
