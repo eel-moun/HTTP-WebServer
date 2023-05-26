@@ -34,7 +34,7 @@ void    Accept(vector<pollfd>& fds, vector<t_client>& clients, size_t i)
         throw runtime_error("couldn't accpet client");
 
     fd.fd = clientFd;
-    fd.events = POLL_IN | POLL_OUT;
+    fd.events = POLLIN | POLLOUT;
     fds.push_back(fd);
     client.new_sock_fd = clientFd;
     client.body.clear();

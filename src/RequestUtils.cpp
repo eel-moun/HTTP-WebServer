@@ -93,39 +93,25 @@ size_t getLocationIndex(string req_path, Server server)
 
 void normalBody(t_client& client,string buffer)
 {
-    int r;
+    int r = 0;
     char buffer1[1024];
     size_t lenght = strtol(client.request["lenght"].c_str(),0,10);
     size_t lenght2 = 0;
 
     if(client.body.size() == 0)
     {
-        cout << buffer.find("\r\n\r\n")<< endl;
-        // cout << buffer << endl;
         buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+        lenght2 = buffer.find("\r\n\r\n") + 4;
         buffer.erase(0, buffer.find("\r\n\r\n") + 4);
-        // cout << buffer << endl;
     }
-    r = 0;
     client.body += buffer;
-    while(client.body.size() < lenght)
+    while((client.body.size()+ lenght2) < lenght)
     {
         bzero(buffer1,1024);
         r = read(client.new_sock_fd, buffer1, 1023);
-        if (r >= 0)
-        client.body += string(buffer1,r);
-        // cout << buffer1 << endl;
-        // cout << lenght2 << endl;
-        lenght2 = client.body.size();
-        if(r == -1)
-            {
-                // cout << strerror(errno) << endl;
-                // cout << client.body << endl;
-                // cout << lenght2 << endl;
-                return ;
-            }
+        if (r != -1)
+            client.body += string(buffer1,r);
     }
-    // cout << client.body.size() << "||" << client.request["lenght"] << endl;
 }
 
 string generateRandomString(int length) {
@@ -135,7 +121,6 @@ string generateRandomString(int length) {
     for (int i = 0; i < length; ++i) {
         randomString += static_cast<char>('a' + rand() % 26);
     }
-
     return randomString;
 }
 
@@ -145,7 +130,6 @@ void fillBody(t_client& client,string buffer)
         normalBody(client, buffer);
     else if(!client.request["Transfer-Encoding"].compare("chunked"))
         chunkedToNormal(client, buffer);
-    //else
-        // error Bad request
-
+    // else
+    //     GenerateResponse("", "", 400, client);
 }

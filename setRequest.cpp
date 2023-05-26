@@ -36,7 +36,7 @@ void    parseRequest(t_client& client, string buffer)
         if (getline(ss2, str, ';'))
             client.request.insert(pair<string, string>("media-type", str));
         if (getline(ss2, str, ';'))
-            client.request.insert(pair<string, string>("charset", str.substr(1)));
+            client.request.insert(pair<string, string>("boundary", str.substr(10)));
     }
     
     stringstream ss3(lineToParse("Content-Length", buffer));
