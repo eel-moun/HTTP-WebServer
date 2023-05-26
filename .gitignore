@@ -8,3 +8,5 @@ websrv
 obj/*
 roadmap
 script.py
+default/nginx.conf
+./mok
