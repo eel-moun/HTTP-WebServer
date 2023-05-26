@@ -108,17 +108,19 @@ void ConfigFile::run_servers(){
                         //cout << clients[i - getSocketNum()].body.size() << endl;
                     if (!clients[i - getSocketNum()].response.size())
                         makeResponse(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
-                    cout << clients[i - getSocketNum()].response.size() << endl;
+                    // cout << clients[i - getSocketNum()].response.size() << endl;
                     // cout << clients[i - getSocketNum()].response << endl;
                 }
                 if (fds[i].revents & POLLOUT && clients[i - getSocketNum()].response.size())
                 {
                     while (w < clients[i - getSocketNum()].response.size())
                     {
-                        r = send(fds[i].fd, clients[i - getSocketNum()].response.c_str() + w , clients[i - getSocketNum()].response.size() - w, 0);
+                        r = write(fds[i].fd, clients[i - getSocketNum()].response.c_str() + w , clients[i - getSocketNum()].response.size() - w);
                         if (r != -1)
                             w += r;
                     }
+                    clients[i - getSocketNum()].response.clear();
+                    w = 0;
                 }
 
             }

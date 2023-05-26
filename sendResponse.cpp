@@ -62,6 +62,12 @@ string getContentType(const string& path)
     else if (path.rfind(".json") != string::npos)
         return ("application/json");
 
+    else if (path.rfind(".ico") != string::npos)
+        return ("image/x-icon");
+
+    else if (path.rfind(".txt") != string::npos)
+        return ("text/plain");
+
     else
         return ("application/octet-stream");
 }
@@ -103,7 +109,7 @@ void    GenerateResponse(const string& content, const string& content_type, cons
     {
         ss << "Content-Type: " << content_type << "\r\n";
         ss << "Content-Length: " << content.size() << "\r\n";
-        ss << "Connection: close\r\n\r\n";
+        ss << "Connection: open\r\n\r\n";
     }
 
     ss << content;
@@ -171,7 +177,6 @@ string  getRightContent(int fd)
         r = read(fd, buffer, 1023);
         content.append(buffer, r);
     }
-    cout << content.size() << endl;
     return (content);
 }
 
@@ -188,9 +193,9 @@ void    makeResponse(t_client& client, Server server)
     string method;
 
     method = client.request["method"];
-    if (checkIfMethodAllowed(server.getLocation(getRightLocation(client.request["path"].substr(0, client.request["path"].find('?')),
-        server))->getAllowedMethod(), method))
-    {
+   // if (checkIfMethodAllowed(server.getLocation(getRightLocation(client.request["path"].substr(0, client.request["path"].find('?')),
+    //    server))->getAllowedMethod(), method))
+    //{
         if (method == "GET")
             GetMethod(client, server);
         else if (method == "POST")
@@ -199,9 +204,9 @@ void    makeResponse(t_client& client, Server server)
             DeleteMethod(client, server);
         else
             GenerateResponse("", "", 501, client);
-    }
-    else
-        GenerateResponse("", "", 405, client);
+    //}
+    //else
+      //  GenerateResponse("", "", 405, client);
 }
 
 Server getRightServer(vector<Server *> servers, t_client client)

@@ -34,7 +34,7 @@ int    GetMethod(t_client& client, Server server)
         fd = open(path_to_serve.c_str(), O_RDONLY);
         if (fd != -1)
             return (GenerateResponse(getRightContent(fd), getContentType(req_path), 200, client), 0);
-        throw runtime_error("error 404 not found");
+        return (GenerateResponse("", "", 404, client), 1);
     }
 }
 
