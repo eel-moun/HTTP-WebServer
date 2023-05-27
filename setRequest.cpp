@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-void    parseRequest(t_client& client, string buffer)
+void parseRequest(t_client& client, string buffer)
 {
     string key[3] = {"method", "path", "protocol"};
     string str;
@@ -13,7 +13,7 @@ void    parseRequest(t_client& client, string buffer)
 
     stringstream ss(lineToParse("first", buffer));
     while (getline(ss, str, ' '))
-        client.request.insert(pair<string, string>(key[i++], str));
+        client.request[key[i++]] = str;
 
     // if protocol != http/1.1 error code 501 Not Implemented
 
@@ -23,9 +23,9 @@ void    parseRequest(t_client& client, string buffer)
         if (str.compare("Host"))
             throw runtime_error("unwanted value");
         if (getline(ss1, str, ':'))
-            client.request.insert(pair<string, string>("host", str.substr(1)));
+            client.request["host"] = str.substr(1);
         if (getline(ss1, str, ':'))
-            client.request.insert(pair<string, string>("port", str));
+            client.request["port"] = str;
     }
 
     stringstream ss2(lineToParse("Content-Type", buffer));
@@ -34,9 +34,9 @@ void    parseRequest(t_client& client, string buffer)
         if (str.compare("Content-Type:"))
             throw runtime_error("unwanted value1");
         if (getline(ss2, str, ';'))
-            client.request.insert(pair<string, string>("media-type", str));
+            client.request["media-type"] = str;
         if (getline(ss2, str, ';'))
-            client.request.insert(pair<string, string>("boundary", str.substr(10)));
+            client.request["boundary"] = str.substr(10);
     }
     
     stringstream ss3(lineToParse("Content-Length", buffer));
@@ -45,7 +45,7 @@ void    parseRequest(t_client& client, string buffer)
         if (str.compare("Content-Length:"))
             throw runtime_error("unwanted value");
         if (getline(ss3, str, ' '))
-            client.request.insert(pair<string, string>("lenght", str));
+            client.request["length"] = str;
     }
 
     stringstream ss4(lineToParse("Transfer-Encoding", buffer));
@@ -54,7 +54,6 @@ void    parseRequest(t_client& client, string buffer)
         if (str.compare("Transfer-Encoding:"))
             throw runtime_error("unwanted value");
         if (getline(ss4, str, ' '))
-            client.request.insert(pair<string, string>("Transfer-Encoding", str));
+            client.request["Transfer-Encoding"] = str;
     }
-
 }

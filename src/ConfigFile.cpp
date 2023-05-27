@@ -112,7 +112,7 @@ void ConfigFile::run_servers(){
                 {
                     while (w < clients[i - getSocketNum()].response.size())
                     {
-                        r = send(fds[i].fd, clients[i - getSocketNum()].response.c_str() + w , clients[i - getSocketNum()].response.size() - w, 0);
+                        r = write(fds[i].fd, clients[i - getSocketNum()].response.c_str() + w , clients[i - getSocketNum()].response.size() - w);
                         if (r != -1)
                             w += r;
                     }
