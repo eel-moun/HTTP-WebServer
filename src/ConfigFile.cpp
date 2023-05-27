@@ -100,7 +100,6 @@ void ConfigFile::run_servers(){
                 {
                     bzero(buffer, 1024);
                     r = read(fds[i].fd, &buffer, 1023);
-                    cout << buffer << endl;
                     if (!clients[i - getSocketNum()].body.size())
                         parseRequest(clients[i - getSocketNum()], string(buffer, r));
                     if (!clients[i - getSocketNum()].response.size())

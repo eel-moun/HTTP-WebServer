@@ -14,6 +14,7 @@ void	checkDefault(ConfigFile& config)
 		}
 		if (count != 1)
 			throw invalid_argument("config file syntax error in default location");
+		count = 0;
 	}
 }
 

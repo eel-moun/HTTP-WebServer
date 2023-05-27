@@ -74,10 +74,6 @@ void    DeleteMethod(t_client& client, Server server)
     int L = 0;
     //check the path of the Request and if post is allowed
     L = getRightLocation(client.request["path"], server);
-    /*if(!count(server.getLocation(L)->getAllowedMethod().begin(),server.getLocation(L)->getAllowedMethod().end(),"DELETE"))
-    {
-            //error METHOD NOT ALLOWED
-    }*/
     filename = getRightRoot(server, L) + client.request["path"].substr(server.getLocation(L)->getPath().size());
     dir = opendir(filename.c_str());
     if(dir != NULL)

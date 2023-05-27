@@ -178,6 +178,7 @@ string  getRightContent(int fd)
     {
         bzero(buffer, 1024);
         r = read(fd, buffer, 1023);
+        if (r >= 0)
         content.append(buffer, r);
     }
     return (content);
@@ -220,12 +221,23 @@ Server getRightServer(vector<Server *> servers, t_client client)
     if (servers.size() == 1)
         return (*servers[0]);
 
-    if ((!host.size() || !port.size()))
-        throw runtime_error("no host or port available to check");
-    
-    for (size_t i = 0; i < servers.size(); i++)
-        if (servers[i]->getValue("host") == host && servers[i]->getValue("listen") == port)
-            return (*servers[i]);
+    if (!host.size())
+        throw runtime_error("no host available to check");
+    if(port.size())
+    {
+        for (size_t i = 0; i < servers.size(); i++)
+        {
+            if (servers[i]->getValue("host") == host)
+                for(size_t j = 0; j < servers[i]->get_listens().size(); j++)
+                    if(servers[i]->get_listens().at(j) == port)
+                        return (*servers[i]);
+        }
+    }else
+    {
+        for (size_t i = 0; i < servers.size(); i++)
+            if (servers[i]->getValue("server_name") == host)
+                return (*servers[i]);
+    }
 
     throw runtime_error("no server found");
 }
