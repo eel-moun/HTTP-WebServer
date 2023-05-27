@@ -105,13 +105,10 @@ void ConfigFile::run_servers(){
                         parseRequest(clients[i - getSocketNum()], string(buffer, r));
                     if (!clients[i - getSocketNum()].response.size())
                         fillBody(clients[i - getSocketNum()], string(buffer,r));
-                        //cout << clients[i - getSocketNum()].body.size() << endl;
                     if (!clients[i - getSocketNum()].response.size())
                         makeResponse(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
-                    cout << clients[i - getSocketNum()].response.size() << endl;
-                    // cout << clients[i - getSocketNum()].response << endl;
                 }
-                if (fds[i].revents & POLLOUT && clients[i - getSocketNum()].response.size())
+                    if (fds[i].revents & POLLOUT && clients[i - getSocketNum()].response.size())
                 {
                     while (w < clients[i - getSocketNum()].response.size())
                     {
@@ -119,8 +116,9 @@ void ConfigFile::run_servers(){
                         if (r != -1)
                             w += r;
                     }
+                    clients[i - getSocketNum()].response.clear();
+                    w = 0;
                 }
-
             }
         }
     }

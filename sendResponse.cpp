@@ -32,6 +32,9 @@ string getContentType(const string& path)
     else if (path.rfind(".jpg") != string::npos)
         return ("image/jpg");
 
+    else if (path.rfind(".jpeg") != string::npos)
+        return ("image/jpeg");
+
     else if (path.rfind(".gif") != string::npos)
         return ("image/gif");
 
@@ -212,7 +215,7 @@ Server getRightServer(vector<Server *> servers, t_client client)
     if (servers.size() == 1)
         return (*servers[0]);
 
-    if (!host.size() || !port.size())
+    if ((!host.size() || !port.size()))
         throw runtime_error("no host or port available to check");
     
     for (size_t i = 0; i < servers.size(); i++)

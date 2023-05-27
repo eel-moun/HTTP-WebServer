@@ -116,7 +116,7 @@ void normalBody(t_client& client,string buffer)
 
 string generateRandomString(int length) {
     string randomString;
-    srand(time(NULL));
+    srand(time(0));
 
     for (int i = 0; i < length; ++i) {
         randomString += static_cast<char>('a' + rand() % 26);
