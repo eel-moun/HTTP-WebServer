@@ -22,6 +22,7 @@ void	checkConfigFile(int ac, char **av, ConfigFile& config)
     ifstream &conf_file = openFileStream(ac ,av);
 	parseConfig(conf_file, config);
 	checkDefault(config);
+	delete &conf_file;
 }
 
 void parseConfig(ifstream& conf_file, ConfigFile& config)
@@ -70,8 +71,14 @@ void parseConfig(ifstream& conf_file, ConfigFile& config)
     }
 }
 
+void	leaks()
+{
+	system("leaks websrv");
+}
+
 int main(int ac, char **av)
 {
+	atexit(leaks);
     ConfigFile  config;
     checkConfigFile(ac, av, config);
 	config.run_servers();

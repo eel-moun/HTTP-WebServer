@@ -1,16 +1,51 @@
 #include "headers/ConfigFile.hpp"
 
+string  generateAutoIndex(string path)
+{
+    stringstream listing;
+    listing << "<html><head><title>Index of " << path << " </title></head>";
+    listing << "<body><h1>Index of " << path << "</h1>\n";
+    listing << "<ul>";
+
+    DIR* dir = opendir(path.c_str());
+    if (dir)
+    {
+        struct dirent* entry;
+        while ((entry = readdir(dir)) != NULL)
+        {
+            string name = entry->d_name;
+            listing << "<li><a href=\"" << name << "\">" << name << "</a></li>";
+        }
+        closedir(dir);
+    }
+
+    listing << "</ul></body></html>";
+    return listing.str();
+}
+
+bool isDirectory(const std::string path)
+{
+    DIR* dir = opendir(path.c_str());
+    if (dir) {
+        closedir(dir);
+        return true;
+    }
+    return false;
+}
+
 int    GetMethod(t_client& client, Server server)
 {
     string req_path;
     string path_to_serve;
     string test_file;
+    int loc_pos;
     int fd;
 
     req_path = client.request["path"].substr(0, req_path.find("?"));
-    int loc_pos = getRightLocation(req_path, server);
-    path_to_serve = getRightRoot(server, loc_pos);
-    if (req_path.substr(server.getLocation(loc_pos)->getPath().size()).size() == 0)
+    loc_pos = getRightLocation(req_path, server);
+    path_to_serve = getRightRoot(server, loc_pos, client);
+    // if we dont have a spesific file in that location
+    if (req_path.substr(server.getLocation(loc_pos)->getPath().size()).size() == 0 || req_path.at(req_path.size() - 1) == '/')
     {
     //////////////////------ get right index file ------////////////////////
         test_file = path_to_serve;
@@ -19,22 +54,36 @@ int    GetMethod(t_client& client, Server server)
             fd = open(test_file.append("/").append(server.getLocation(loc_pos)->getIndex(i)).c_str(), O_RDONLY);
             if (fd != -1)
                     return (GenerateResponse(getRightContent(fd), getContentType(server.getLocation(loc_pos)->getIndex(i)), 200, client), 0);
-            test_file.substr(0, test_file.find_last_of("/"));
+            test_file = path_to_serve;
         }
-        return (GenerateResponse("", "", 404, client), 1);
+        if (!server.getValue("autoindex").compare("ON") || !server.getLocation(loc_pos)->getAutoIndex().compare("ON"))
+            return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
+        else
+            return (GenerateResponse("", "", 404, client), 1);
     }
     else
     {
         ////////////////------  check file   ------//////////////////
-        if (server.getLocation(loc_pos)->getPath().compare("/"))
-            path_to_serve = path_to_serve.append(req_path.substr(server.getLocation(loc_pos)->getPath().size()));
-        else
-            path_to_serve = path_to_serve.append(req_path);
 
+        // GET RIGHT ROOT
+        if (!server.getLocation(loc_pos)->getPath().compare("/") && !req_path.compare("/"))
+            path_to_serve.append(req_path.substr(1));
+        else if (server.getLocation(loc_pos)->getRoot().size())
+            path_to_serve = server.getLocation(loc_pos)->getRoot().append(req_path.substr(server.getLocation(loc_pos)->getPath().size()));
+        else if (server.getValue("root").size())
+            path_to_serve = server.getValue("root").append(req_path);
+        else
+            return (GenerateResponse("", "", 405, client), 1); //
+
+        if (isDirectory(path_to_serve))
+            return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
         fd = open(path_to_serve.c_str(), O_RDONLY);
         if (fd != -1)
             return (GenerateResponse(getRightContent(fd), getContentType(req_path), 200, client), 0);
-        return (GenerateResponse("", "", 404, client), 1);
+        else if (!server.getValue("autoindex").compare("ON") || !server.getLocation(loc_pos)->getAutoIndex().compare("ON"))
+            return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
+        else
+            return (GenerateResponse("", "", 404, client), 1);
     }
 }
 
@@ -50,7 +99,7 @@ void    PostMethod(t_client& client, Server& server)
     if (filename.size() == 0)
         filename = generateRandomString(10) + "." +client.request["Content-Type"];
 
-    filename = getRightRoot(server, L) + server.getLocation(L)->get_upload_dir() + filename;
+    filename = getRightRoot(server, L, client) + server.getLocation(L)->get_upload_dir() + filename;
 
     postfile.open(filename,std::ios::binary);
     if (postfile)
@@ -76,7 +125,7 @@ void    DeleteMethod(t_client& client, Server server)
     {
             //error METHOD NOT ALLOWED
     }*/
-    filename = getRightRoot(server, L) + client.request["path"].substr(server.getLocation(L)->getPath().size());
+    filename = getRightRoot(server, L, client) + client.request["path"].substr(server.getLocation(L)->getPath().size());
     dir = opendir(filename.c_str());
     if(dir != NULL)
     {

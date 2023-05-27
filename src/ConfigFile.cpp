@@ -105,7 +105,7 @@ void ConfigFile::run_servers(){
                         parseRequest(clients[i - getSocketNum()], string(buffer, r));
                     if (!clients[i - getSocketNum()].response.size())
                         fillBody(clients[i - getSocketNum()], string(buffer,r));
-                        //cout << clients[i - getSocketNum()].body.size() << endl;
+                    cout << this->getServer(0)->getLocation(0)->getAutoIndex() << endl;
                     if (!clients[i - getSocketNum()].response.size())
                         makeResponse(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
                     // cout << clients[i - getSocketNum()].response.size() << endl;
@@ -121,6 +121,7 @@ void ConfigFile::run_servers(){
                     }
                     clients[i - getSocketNum()].response.clear();
                     w = 0;
+                    exit(1);
                 }
 
             }
