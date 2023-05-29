@@ -121,7 +121,6 @@ void ConfigFile::run_servers(){
                     }
                     clients[i - getSocketNum()].response.clear();
                     w = 0;
-                    exit(1);
                 }
 
             }

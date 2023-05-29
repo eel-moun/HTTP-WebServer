@@ -42,6 +42,7 @@ int             GetMethod(t_client& client, Server server);
 void            PostMethod(t_client& client, Server& server);
 void            DeleteMethod(t_client& client, Server server);
 void            GenerateResponse(const string& content, const string& content_type, const int status_code, t_client& client);
+
 string          getContentType(const string& path);
 string          generateRandomString(int length);
 void            normalBody(t_client& client,string buffer);

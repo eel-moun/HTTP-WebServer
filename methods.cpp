@@ -48,6 +48,12 @@ int    GetMethod(t_client& client, Server server)
     if (req_path.substr(server.getLocation(loc_pos)->getPath().size()).size() == 0 || req_path.at(req_path.size() - 1) == '/')
     {
     //////////////////------ get right index file ------////////////////////
+        if (isDirectory(path_to_serve.append(req_path)) && req_path.compare("/"))
+        {
+            if (req_path.at(req_path.size() - 1) != '/')
+                return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 301, client), 1);
+            return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
+        }
         test_file = path_to_serve;
         for (size_t i = 0; i < server.getLocation(loc_pos)->getIndexSize(); i++)
         {
@@ -56,10 +62,13 @@ int    GetMethod(t_client& client, Server server)
                     return (GenerateResponse(getRightContent(fd), getContentType(server.getLocation(loc_pos)->getIndex(i)), 200, client), 0);
             test_file = path_to_serve;
         }
-        if (!server.getValue("autoindex").compare("ON") || !server.getLocation(loc_pos)->getAutoIndex().compare("ON"))
-            return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
+        if (isDirectory(path_to_serve))
+        {
+            if (!server.getValue("autoindex").compare("ON") || !server.getLocation(loc_pos)->getAutoIndex().compare("ON"))
+                return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
+        }
         else
-            return (GenerateResponse("", "", 404, client), 1);
+            return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 404, client), 1);
     }
     else
     {
@@ -76,15 +85,23 @@ int    GetMethod(t_client& client, Server server)
             return (GenerateResponse("", "", 405, client), 1); //
 
         if (isDirectory(path_to_serve))
+        {
+            if (req_path.at(req_path.size() - 1) != '/')
+                return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 301, client), 1);
             return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
+        }
         fd = open(path_to_serve.c_str(), O_RDONLY);
         if (fd != -1)
             return (GenerateResponse(getRightContent(fd), getContentType(req_path), 200, client), 0);
-        else if (!server.getValue("autoindex").compare("ON") || !server.getLocation(loc_pos)->getAutoIndex().compare("ON"))
-            return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
+        if (isDirectory(path_to_serve))
+        {
+            if (!server.getValue("autoindex").compare("ON") || !server.getLocation(loc_pos)->getAutoIndex().compare("ON"))
+                return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
+        }
         else
-            return (GenerateResponse("", "", 404, client), 1);
+            return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 404, client), 1);
     }
+    return (1);
 }
 
 void    PostMethod(t_client& client, Server& server)

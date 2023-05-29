@@ -80,6 +80,8 @@ static const string    getStatusCode(const int status_code)
             return (" OK");
         case 201:
             return (" Created");
+        case 301:
+            return (" Moved Permanently");
         case 404:
             return (" Page Not Found");
         case 405:
@@ -162,7 +164,7 @@ string  getRightRoot(Server server, int loc_pos, t_client client)
     else if (server.getValue("root").size())
         return (server.getValue("root"));
     else
-        return (GenerateResponse("", "", 405, client), "");
+        return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 405, client), "");
 }
 
 string  getRightContent(int fd)
@@ -204,10 +206,10 @@ void    makeResponse(t_client& client, Server server)
         else if (method == "DELETE")
             DeleteMethod(client, server);
         else
-            GenerateResponse("", "", 501, client);
+            GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 501, client);
     }
     else
-       GenerateResponse("", "", 405, client);
+       GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 405, client);
 }
 
 Server getRightServer(vector<Server *> servers, t_client client)

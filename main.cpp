@@ -14,6 +14,16 @@ void	checkDefault(ConfigFile& config)
 		}
 		if (count != 1)
 			throw invalid_argument("config file syntax error in default location");
+		if (!config.getServer(i)->getValue("root").size())
+			throw invalid_argument("config file syntax error no root");
+		if (!config.getServer(i)->getValue("default_error").size())
+			throw invalid_argument("config file syntax error no default_error");
+		if (!config.getServer(i)->getValue("default_error").size())
+			throw invalid_argument("config file syntax error no default_error");
+		if (!config.getServer(i)->getValue("host").size())
+			throw invalid_argument("config file syntax error no host");
+		if (!config.getServer(i)->get_listens().size())
+			throw invalid_argument("config file syntax error no port to listen");
 	}
 }
 
@@ -71,14 +81,8 @@ void parseConfig(ifstream& conf_file, ConfigFile& config)
     }
 }
 
-void	leaks()
-{
-	system("leaks websrv");
-}
-
 int main(int ac, char **av)
 {
-	atexit(leaks);
     ConfigFile  config;
     checkConfigFile(ac, av, config);
 	config.run_servers();
