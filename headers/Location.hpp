@@ -14,7 +14,6 @@ class Location{
         string root;
         string auto_index;
         string upload_dir;
-        string cgi_path;
         string cgi_ext;
         vector<string> _return;
         vector<string> allowed_method;
@@ -33,10 +32,8 @@ class Location{
         void    setAllowedMethod(string _method);
         void    set_upload_dir(string _upload_dir);
         void    set_return(string value);
-        void    set_cgi_path(string path);
         void    set_cgi_ext(string ext);
         string  get_cgi_ext();
-        string  get_cgi_path();
         string  getAutoIndex();
         string  getPath();
         string  getIndex(size_t index);
