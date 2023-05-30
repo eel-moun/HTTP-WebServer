@@ -87,7 +87,7 @@ int    GetMethod(t_client& client, Server server)
 
     req_path = client.request["path"].substr(0, req_path.find("?"));
     loc_pos = getRightLocation(req_path, server);
-    path_to_serve = getRightRoot(server, loc_pos, client);
+    path_to_serve = getRightRoot(server, loc_pos);
 
     // // is cgi request
     // if (isCGI(req_path, server.getLocation(loc_pos)->get_cgi_ext()))

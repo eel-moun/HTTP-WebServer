@@ -221,14 +221,14 @@ int  getRightLocation(string req_path, Server server)
     return (j);
 }
 
-string  getRightRoot(Server server, int loc_pos, t_client client)
+string  getRightRoot(Server server, int loc_pos)
 {
     if (server.getLocation(loc_pos)->getRoot().size())
        return (server.getLocation(loc_pos)->getRoot());
     else if (server.getValue("root").size())
         return (server.getValue("root"));
     else
-        return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 405, client), "");
+        return("");
 }
 
 string  getRightContent(int fd)

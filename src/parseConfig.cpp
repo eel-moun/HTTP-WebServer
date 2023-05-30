@@ -19,7 +19,7 @@ int keyValue(string line, ConfigFile& config)
 
 void fillConfigFile(string key, string value, ConfigFile& config)
 {
-    array<string, 15> keys = {"host", "default_error", "max_size", "listen", "server", "location", "path", "index", "root", "allowed_method", "autoindex", "upload_dir", "return", "cgi_path", "cgi_ext"};
+    array<string, 16> keys = {"host", "default_error", "max_size", "server_name", "listen", "server", "location", "path", "index", "root", "allowed_method", "autoindex", "upload_dir", "return", "cgi_path", "cgi_ext"};
     int i = 0;
     int ser_size = config.getSize();
     size_t loc_size;
@@ -88,12 +88,12 @@ void fillConfigFile(string key, string value, ConfigFile& config)
                     throw invalid_argument("declare a location");
                 config.getServer(ser_size - 1)->getLocation(loc_size - 1)->set_return(value);
                 break;
-            case 13:
+            case 14:
                 if (loc_size == 0)
                     throw invalid_argument("declare a location");
                 config.getServer(ser_size - 1)->getLocation(loc_size - 1)->set_cgi_path(value);
                 break;
-            case 14:
+            case 15:
                 if (loc_size == 0)
                     throw invalid_argument("declare a location");
                 config.getServer(ser_size - 1)->getLocation(loc_size - 1)->set_cgi_ext(value);
