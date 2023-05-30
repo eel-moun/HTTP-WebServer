@@ -14,7 +14,16 @@ void	checkDefault(ConfigFile& config)
 		}
 		if (count != 1)
 			throw invalid_argument("config file syntax error in default location");
-		count = 0;
+		if (!config.getServer(i)->getValue("root").size())
+			throw invalid_argument("config file syntax error no root");
+		if (!config.getServer(i)->getValue("default_error").size())
+			throw invalid_argument("config file syntax error no default_error");
+		if (!config.getServer(i)->getValue("default_error").size())
+			throw invalid_argument("config file syntax error no default_error");
+		if (!config.getServer(i)->getValue("host").size())
+			throw invalid_argument("config file syntax error no host");
+		if (!config.getServer(i)->get_listens().size())
+			throw invalid_argument("config file syntax error no port to listen");
 	}
 }
 
@@ -23,6 +32,7 @@ void	checkConfigFile(int ac, char **av, ConfigFile& config)
     ifstream &conf_file = openFileStream(ac ,av);
 	parseConfig(conf_file, config);
 	checkDefault(config);
+	delete &conf_file;
 }
 
 void parseConfig(ifstream& conf_file, ConfigFile& config)
@@ -79,37 +89,3 @@ int main(int ac, char **av)
 
     return (0);
 }
-
-
-/*
-        if (buffer.find("\r\n") == string::npos)
-        {
-            tmp = buffer.substr(0);
-            buffer.erase(0, buffer.size());
-            while(buffer.find("\r\n") == string::npos && buffer.size() < len)
-            {   
-                bzero(buffer1,1024);
-                r = read(client.new_sock_fd, buffer1, 1023);
-                if(r >= 0)
-                    buffer += string(buffer1,r);
-            }
-            tmp += buffer.substr(0, buffer.find("\r\n"));
-            buffer.erase(0, buffer.find("\r\n") + 2);
-        }else
-        {
-            tmp = buffer.substr(0, buffer.find("\r\n"));
-            buffer.erase(0, buffer.find("\r\n") + 2);
-        }
-        cout << tmp.size() << endl;
-        cout << "<--------------->" << endl;
-
-        if(len == -1 && tmp.size())
-        {
-            len = std::stol(tmp, 0, 16);
-        }
-        else{
-            client.body += tmp;
-            max_lenght += len;
-            len = -1;
-        }
-    }*/

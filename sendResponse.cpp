@@ -144,6 +144,8 @@ static const string    getStatusCode(const int status_code)
             return (" OK");
         case 201:
             return (" Created");
+        case 301:
+            return (" Moved Permanently");
         case 404:
             return (" Page Not Found");
         case 405:
@@ -219,14 +221,14 @@ int  getRightLocation(string req_path, Server server)
     return (j);
 }
 
-string  getRightRoot(Server server, int loc_pos)
+string  getRightRoot(Server server, int loc_pos, t_client client)
 {
     if (server.getLocation(loc_pos)->getRoot().size())
        return (server.getLocation(loc_pos)->getRoot());
     else if (server.getValue("root").size())
         return (server.getValue("root"));
     else
-        throw runtime_error("403 forbiden");
+        return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 405, client), "");
 }
 
 string  getRightContent(int fd)
@@ -258,9 +260,9 @@ void    makeResponse(t_client& client, Server server)
     string method;
 
     method = client.request["method"];
-   // if (checkIfMethodAllowed(server.getLocation(getRightLocation(client.request["path"].substr(0, client.request["path"].find('?')),
-    //    server))->getAllowedMethod(), method))
-    //{
+   if (checkIfMethodAllowed(server.getLocation(getRightLocation(client.request["path"].substr(0, client.request["path"].find('?')),
+       server))->getAllowedMethod(), method))
+    {
         if (method == "GET")
             GetMethod(client, server);
         else if (method == "POST")
@@ -268,10 +270,10 @@ void    makeResponse(t_client& client, Server server)
         else if (method == "DELETE")
             DeleteMethod(client, server);
         else
-            GenerateResponse("", "", 501, client);
-    //}
-    //else
-      //  GenerateResponse("", "", 405, client);
+            GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 501, client);
+    }
+    else
+       GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 405, client);
 }
 
 Server getRightServer(vector<Server *> servers, t_client client)

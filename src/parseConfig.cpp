@@ -72,7 +72,10 @@ void fillConfigFile(string key, string value, ConfigFile& config)
                 break;
             case 11:
                 if (loc_size == 0)
-                    throw invalid_argument("declare a location");
+                {
+                    config.getServer(ser_size - 1)->setValue(key, value);
+                    break;
+                }
                 config.getServer(ser_size - 1)->getLocation(loc_size - 1)->setAutoIndex(value);
                 break;
             case 12:
