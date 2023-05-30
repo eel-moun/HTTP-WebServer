@@ -27,7 +27,7 @@ void fillConfigFile(string key, string value, ConfigFile& config)
     if (ser_size > 0)
         loc_size = config.getServer(ser_size - 1)->getSize();
 
-    while (i <= 11 && key.compare(keys[i]))
+    while (i <= 13 && key.compare(keys[i]))
         i++;
 
     if (i <= 3)

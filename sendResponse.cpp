@@ -75,6 +75,67 @@ string getContentType(const string& path)
         return ("application/octet-stream");
 }
 
+string getContentTypeExt(const string& path)
+{
+
+    if (!path.compare("text/html"))
+        return (".html");
+
+    else if (!path.compare("text/css"))
+        return (".css");
+
+    else if (!path.compare("text/javascript"))
+        return (".js");
+
+    else if (!path.compare("image/png"))
+        return (".png");
+
+    else if (!path.compare("image/jpg"))
+        return (".jpg");
+
+    else if (!path.compare("image/jpeg"))
+        return (".jpeg");
+
+    else if (!path.compare("image/gif"))
+        return (".gif");
+
+    else if (!path.compare("image/svg+xml"))
+        return (".svg");
+
+    else if (!path.compare("application/pdf"))
+        return (".pdf");
+
+    else if (!path.compare("application/zip"))
+        return (".zip");
+
+    else if (!path.compare("application/gzip"))
+        return (".gz");
+
+    else if (!path.compare("audio/mpeg"))
+        return (".mp3");
+
+    else if (!path.compare("video/mp4"))
+        return (".mp4");
+
+    else if (!path.compare("video/x-matroska"))
+        return (".mkv");
+
+    else if (!path.compare("application/xml"))
+        return (".xml");
+
+    else if (!path.compare("application/json"))
+        return (".json");
+
+    else if (!path.compare("image/x-icon"))
+        return (".ico");
+
+    else if (!path.compare("text/plain"))
+        return (".txt");
+
+    else
+        return (".");
+}
+
 static const string    getStatusCode(const int status_code)
 {
     switch (status_code)

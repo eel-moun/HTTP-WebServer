@@ -48,12 +48,12 @@ void    PostMethod(t_client& client, Server& server)
     filename = client.request["path"].substr(client.request["path"].find_last_of('/', string::npos));
     if(!filename.compare(client.request["path"]))
         filename = filename.substr(client.request["path"].size());
-    cout<< client.request["media-type"] << endl;
     if (filename.size() == 0 || !filename.compare("/"))
-        filename = '/'+ generateRandomString(10) + "." +client.request["Content-Type"];
-
+        filename = '/'+ generateRandomString(10) + getContentTypeExt(client.request["media-type"]);
+    cout << getRightRoot(server, L) << endl;
+    cout << server.getLocation(L)->get_upload_dir() << endl;
+    cout << filename << endl;
     filename = getRightRoot(server, L) + server.getLocation(L)->get_upload_dir() + filename;
-
     postfile.open(filename,std::ios::binary);
     if (postfile)
     {

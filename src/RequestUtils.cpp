@@ -27,44 +27,47 @@ void chunkedToNormal(t_client& client, string buffer)
     char buffer1[1024];
     string tmp;
     int r;
-    int len;
-    int max_lenght = 0;
+    size_t len;
 
     r = 0;
-    len = -1;
     buffer.erase(0, buffer.find("\r\n\r\n") + 4);
-    while (r != -1)
+    buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+    while (r != -1 && buffer.find("0\r\n\r\n") != 0 && len != 0)
     {
         if(buffer.find("\r\n") == 0)
             buffer.erase(0,2);
+        bzero(buffer1,1024);
+        r = read(client.new_sock_fd, buffer1, 1023);
+        if(r >= 0)
+            buffer += string(buffer1,r);
+        tmp = buffer.substr(0, buffer.find("\r\n"));
+        buffer.erase(0, buffer.find("\r\n") + 2);
 
-        if (buffer.find("\r\n") == string::npos)
-        {
-            tmp = buffer.substr(0);
-            buffer.erase(0, buffer.size());
-            while(buffer.find("\r\n") == string::npos && r != -1)
-            {   
-                bzero(buffer1,1024);
-                r = read(client.new_sock_fd, buffer1, 1023);
-                buffer += string(buffer1,r);
-            }
-            tmp += buffer.substr(0, buffer.find("\r\n"));
-            buffer.erase(0, buffer.find("\r\n") + 2);
-        }else
-        {
-            tmp = buffer.substr(0, buffer.find("\r\n"));
-            buffer.erase(0, buffer.find("\r\n") + 2);
-        }
-
-        if(len == -1 && tmp.size())
+        if(tmp.size())
         {
             len = std::stol(tmp, 0, 16);
+            tmp.clear();
         }
-        else{
-            client.body += tmp;
-            max_lenght += len;
-            len = -1;
+        while(buffer.size() < len)
+        {
+            bzero(buffer1,1024);
+            r = read(client.new_sock_fd, buffer1, 1023);
+            if(r >= 0)
+                buffer += string(buffer1,r);
         }
+        cout <<  buffer.size()<< endl;
+        while(tmp.size() < len)
+        {
+            tmp += buffer.substr(0, len);
+            buffer.erase(0, len + 2);
+            cout << tmp.size() << endl;
+            cout <<  buffer.size()<< endl;
+        }
+        cout << buffer.size() << endl;
+        cout << tmp.size() << endl;
+        cout << tmp.substr(0,10) << endl;
+        cout << tmp.substr(tmp.size() -10) << endl;
+        client.body += tmp;
     }
 }
 
