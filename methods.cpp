@@ -23,7 +23,7 @@ string  generateAutoIndex(string path)
     return listing.str();
 }
 
-bool isDirectory(const std::string path)
+bool isDirectory(const string path)
 {
     DIR* dir = opendir(path.c_str());
     if (dir) {
@@ -32,6 +32,50 @@ bool isDirectory(const std::string path)
     }
     return false;
 }
+
+bool isCGI(string path, string ext)
+{
+    if (!path.compare(path.size() - ext.size(), path.size(), ext))
+        return (true);
+    else
+        return (false);
+}
+
+// int    CGI_handler(t_client& client, Server server)
+// {
+//     int     pipes[2];
+//     int     status;
+//     pid_t   pid, wait;
+    
+//     if (pipe(pipes) == -1)
+//         throw std::runtime_error("pipe failed");
+    
+//     pid = fork();
+//     if (pid == -1)
+//         throw std::runtime_error("fork failed");
+//     else if (pid)
+//     {
+//         wait = waitpid(pid, &status, 0);
+//         if (wait == -1)
+//             throw std::runtime_error("wait failed");
+//         if (WIFEXITED(status))
+//             return WEXITSTATUS(status);
+//         else if (WIFSIGNALED(status))
+// 		    return WTERMSIG(status);
+//         else
+//             return (1);
+//     }
+//     else
+//     {
+//         if (dup2(pipes[0], STDIN_FILENO) == -1 || close(pipes[1]) == -1 || close(pipes[0]) == -1)
+// 	    		throw std::runtime_error("dup2() of close() failed");
+
+//         setenv("REQUEST_METHOD", "GET", 1);
+//         extern char** environ;
+//         char** env = environ;
+//         // need args for execve and so one
+//     }
+// }
 
 int    GetMethod(t_client& client, Server server)
 {
@@ -44,15 +88,24 @@ int    GetMethod(t_client& client, Server server)
     req_path = client.request["path"].substr(0, req_path.find("?"));
     loc_pos = getRightLocation(req_path, server);
     path_to_serve = getRightRoot(server, loc_pos, client);
+
+    // // is cgi request
+    // if (isCGI(req_path, server.getLocation(loc_pos)->get_cgi_ext()))
+    //     CGI_handler(client, server);
+
     // if we dont have a spesific file in that location
     if (req_path.substr(server.getLocation(loc_pos)->getPath().size()).size() == 0 || req_path.at(req_path.size() - 1) == '/')
     {
     //////////////////------ get right index file ------////////////////////
-        if (isDirectory(path_to_serve.append(req_path)) && req_path.compare("/"))
+        if (req_path.compare("/"))
         {
-            if (req_path.at(req_path.size() - 1) != '/')
-                return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 301, client), 1);
-            return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
+            if (isDirectory(path_to_serve.append(req_path)))
+            {
+                if (req_path.at(req_path.size() - 1) != '/')
+                    return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 301, client), 1);
+                else if (!server.getValue("autoindex").compare("ON") || !server.getLocation(loc_pos)->getAutoIndex().compare("ON"))
+                    return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
+            }
         }
         test_file = path_to_serve;
         for (size_t i = 0; i < server.getLocation(loc_pos)->getIndexSize(); i++)
@@ -62,13 +115,7 @@ int    GetMethod(t_client& client, Server server)
                     return (GenerateResponse(getRightContent(fd), getContentType(server.getLocation(loc_pos)->getIndex(i)), 200, client), 0);
             test_file = path_to_serve;
         }
-        if (isDirectory(path_to_serve))
-        {
-            if (!server.getValue("autoindex").compare("ON") || !server.getLocation(loc_pos)->getAutoIndex().compare("ON"))
-                return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
-        }
-        else
-            return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 404, client), 1);
+        return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 404, client), 1);
     }
     else
     {
