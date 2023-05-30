@@ -89,7 +89,7 @@ int    GetMethod(t_client& client, Server server)
 
     req_path = client.request["path"].substr(0, req_path.find("?"));
     loc_pos = getRightLocation(req_path, server);
-    path_to_serve = getRightRoot(server, loc_pos, client);
+    path_to_serve = getRightRoot(server, loc_pos);
 
     // // is cgi request
     // if (isCGI(req_path, server.getLocation(loc_pos)->get_cgi_ext()))
@@ -161,12 +161,14 @@ void    PostMethod(t_client& client, Server& server)
 
     L = getRightLocation(client.request["path"], server);
     filename = client.request["path"].substr(client.request["path"].find_last_of('/', string::npos));
-
-    if (filename.size() == 0)
-        filename = generateRandomString(10) + "." +client.request["Content-Type"];
-
-    filename = getRightRoot(server, L, client) + server.getLocation(L)->get_upload_dir() + filename;
-
+    if(!filename.compare(client.request["path"]))
+        filename = filename.substr(client.request["path"].size());
+    if (filename.size() == 0 || !filename.compare("/"))
+        filename = '/'+ generateRandomString(10) + getContentTypeExt(client.request["media-type"]);
+    cout << getRightRoot(server, L) << endl;
+    cout << server.getLocation(L)->get_upload_dir() << endl;
+    cout << filename << endl;
+    filename = getRightRoot(server, L) + server.getLocation(L)->get_upload_dir() + filename;
     postfile.open(filename,std::ios::binary);
     if (postfile)
     {
@@ -187,11 +189,7 @@ void    DeleteMethod(t_client& client, Server server)
     int L = 0;
     //check the path of the Request and if post is allowed
     L = getRightLocation(client.request["path"], server);
-    /*if(!count(server.getLocation(L)->getAllowedMethod().begin(),server.getLocation(L)->getAllowedMethod().end(),"DELETE"))
-    {
-            //error METHOD NOT ALLOWED
-    }*/
-    filename = getRightRoot(server, L, client) + client.request["path"].substr(server.getLocation(L)->getPath().size());
+    filename = getRightRoot(server, L) + client.request["path"].substr(server.getLocation(L)->getPath().size());
     dir = opendir(filename.c_str());
     if(dir != NULL)
     {

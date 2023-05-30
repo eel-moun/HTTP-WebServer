@@ -27,7 +27,7 @@ void parseRequest(t_client& client, string buffer)
         if (getline(ss1, str, ':'))
             client.request["port"] = str;
     }
-
+    cout << client.request["host"] << endl;
     stringstream ss2(lineToParse("Content-Type", buffer));
     if (getline(ss2, str, ' '))
     {

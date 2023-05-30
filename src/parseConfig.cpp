@@ -19,7 +19,7 @@ int keyValue(string line, ConfigFile& config)
 
 void fillConfigFile(string key, string value, ConfigFile& config)
 {
-    array<string, 14> keys = {"host", "default_error", "max_size", "listen", "server", "location", "path", "index", "root", "allowed_method", "autoindex", "upload_dir", "return", "cgi_ext"};
+    array<string, 15> keys = {"host", "default_error", "max_size", "server_name", "listen", "server", "location", "path", "index", "root", "allowed_method", "autoindex", "upload_dir", "return", "cgi_ext"};
     int i = 0;
     int ser_size = config.getSize();
     size_t loc_size;
@@ -27,37 +27,37 @@ void fillConfigFile(string key, string value, ConfigFile& config)
     if (ser_size > 0)
         loc_size = config.getServer(ser_size - 1)->getSize();
 
-        while (i <= 14 && key.compare(keys[i]))
+    while (i <= 14 && key.compare(keys[i]))
         i++;
 
-    if (i <= 2)
+    if (i <= 3)
         config.getServer(ser_size - 1)->setValue(key, value);
 
     else switch (i)
     {
         {
-            case 3:
+            case 4:
                 config.getServer(ser_size - 1)->set_listens(value);
                 break;
-            case 4:
+            case 5:
                 config.setServer();
                 break;
-            case 5:
+            case 6:
                 config.getServer(ser_size - 1)->setLocation();
                 break;
-            case 6:
+            case 7:
                 if (loc_size == 0)
                     throw invalid_argument("declare a location");
                 else if (value.substr(value.size() - 1) == "/" && value.size() != 1)
                     throw invalid_argument("can't be '/' in end of path");
                 config.getServer(ser_size - 1)->getLocation(loc_size - 1)->setPath(value);
                 break;
-            case 7:
+            case 8:
                 if (loc_size == 0)
                     throw invalid_argument("declare a location");
                 config.getServer(ser_size - 1)->getLocation(loc_size - 1)->setIndex(value);
                 break;
-            case 8:
+            case 9:
                 if (loc_size == 0)
                 {
                     config.getServer(ser_size - 1)->setValue(key, value);
@@ -65,12 +65,12 @@ void fillConfigFile(string key, string value, ConfigFile& config)
                 }
                 config.getServer(ser_size - 1)->getLocation(loc_size - 1)->setRoot(value);
                 break;
-            case 9:
+            case 10:
                 if (loc_size == 0)
                     throw invalid_argument("declare a location");
                 config.getServer(ser_size - 1)->getLocation(loc_size - 1)->setAllowedMethod(value);
                 break;
-            case 10:
+            case 11:
                 if (loc_size == 0)
                 {
                     config.getServer(ser_size - 1)->setValue(key, value);
@@ -78,17 +78,17 @@ void fillConfigFile(string key, string value, ConfigFile& config)
                 }
                 config.getServer(ser_size - 1)->getLocation(loc_size - 1)->setAutoIndex(value);
                 break;
-            case 11:
+            case 12:
                 if (loc_size == 0)
                     throw invalid_argument("declare a location");
                 config.getServer(ser_size - 1)->getLocation(loc_size - 1)->set_upload_dir(value);
                 break;
-            case 12:
+            case 13:
                 if (loc_size == 0)
                     throw invalid_argument("declare a location");
                 config.getServer(ser_size - 1)->getLocation(loc_size - 1)->set_return(value);
                 break;
-            case 13:
+            case 14:
                 if (loc_size == 0)
                     throw invalid_argument("declare a location");
                 config.getServer(ser_size - 1)->getLocation(loc_size - 1)->set_cgi_ext(value);

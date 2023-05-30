@@ -32,6 +32,9 @@ string getContentType(const string& path)
     else if (path.rfind(".jpg") != string::npos)
         return ("image/jpg");
 
+    else if (path.rfind(".jpeg") != string::npos)
+        return ("image/jpeg");
+
     else if (path.rfind(".gif") != string::npos)
         return ("image/gif");
 
@@ -70,6 +73,67 @@ string getContentType(const string& path)
 
     else
         return ("application/octet-stream");
+}
+
+string getContentTypeExt(const string& path)
+{
+
+    if (!path.compare("text/html"))
+        return (".html");
+
+    else if (!path.compare("text/css"))
+        return (".css");
+
+    else if (!path.compare("text/javascript"))
+        return (".js");
+
+    else if (!path.compare("image/png"))
+        return (".png");
+
+    else if (!path.compare("image/jpg"))
+        return (".jpg");
+
+    else if (!path.compare("image/jpeg"))
+        return (".jpeg");
+
+    else if (!path.compare("image/gif"))
+        return (".gif");
+
+    else if (!path.compare("image/svg+xml"))
+        return (".svg");
+
+    else if (!path.compare("application/pdf"))
+        return (".pdf");
+
+    else if (!path.compare("application/zip"))
+        return (".zip");
+
+    else if (!path.compare("application/gzip"))
+        return (".gz");
+
+    else if (!path.compare("audio/mpeg"))
+        return (".mp3");
+
+    else if (!path.compare("video/mp4"))
+        return (".mp4");
+
+    else if (!path.compare("video/x-matroska"))
+        return (".mkv");
+
+    else if (!path.compare("application/xml"))
+        return (".xml");
+
+    else if (!path.compare("application/json"))
+        return (".json");
+
+    else if (!path.compare("image/x-icon"))
+        return (".ico");
+
+    else if (!path.compare("text/plain"))
+        return (".txt");
+
+    else
+        return (".");
 }
 
 static const string    getStatusCode(const int status_code)
@@ -157,14 +221,13 @@ int  getRightLocation(string req_path, Server server)
     return (j);
 }
 
-string  getRightRoot(Server server, int loc_pos, t_client client)
+string  getRightRoot(Server server, int loc_pos)
 {
     if (server.getLocation(loc_pos)->getRoot().size())
        return (server.getLocation(loc_pos)->getRoot());
     else if (server.getValue("root").size())
         return (server.getValue("root"));
-    else
-        return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 405, client), "");
+    return ("");
 }
 
 string  getRightContent(int fd)
@@ -177,7 +240,7 @@ string  getRightContent(int fd)
     {
         bzero(buffer, 1024);
         r = read(fd, buffer, 1023);
-        if (r > 0)
+        if (r >= 0)
             content.append(buffer, r);
     }
     return (content);
@@ -220,12 +283,23 @@ Server getRightServer(vector<Server *> servers, t_client client)
     if (servers.size() == 1)
         return (*servers[0]);
 
-    if (!host.size() || !port.size())
-        throw runtime_error("no host or port available to check");
-    
-    for (size_t i = 0; i < servers.size(); i++)
-        if (servers[i]->getValue("host") == host && servers[i]->getValue("listen") == port)
-            return (*servers[i]);
+    if (!host.size())
+        throw runtime_error("no host available to check");
+    if(port.size())
+    {
+        for (size_t i = 0; i < servers.size(); i++)
+        {
+            if (servers[i]->getValue("host") == host)
+                for(size_t j = 0; j < servers[i]->get_listens().size(); j++)
+                    if(servers[i]->get_listens().at(j) == port)
+                        return (*servers[i]);
+        }
+    }else
+    {
+        for (size_t i = 0; i < servers.size(); i++)
+            if (servers[i]->getValue("server_name") == host)
+                return (*servers[i]);
+    }
 
     throw runtime_error("no server found");
 }
