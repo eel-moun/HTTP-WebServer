@@ -33,15 +33,15 @@ bool isDirectory(const string path)
     return false;
 }
 
-bool isCGI(string path, string ext)
-{
-    if (!path.compare(path.size() - ext.size(), path.size(), ext))
-        return (true);
-    else
-        return (false);
-}
+// bool isCGI(string path, string ext)
+// {
+//     if (!path.compare(path.size() - ext.size(), path.size(), ext))
+//         return (true);
+//     else
+//         return (false);
+// }
 
-// int    CGI_handler(t_client& client, Server server)
+// int    CGI_handler(t_client& client, Server server, int loc_pos)
 // {
 //     int     pipes[2];
 //     int     status;
@@ -71,6 +71,8 @@ bool isCGI(string path, string ext)
 // 	    		throw std::runtime_error("dup2() of close() failed");
 
 //         setenv("REQUEST_METHOD", "GET", 1);
+//         if (server.getLocation(loc_pos).get)
+//         setenv("PATH_INFO", server.getValue("root").c_str(), 1);
 //         extern char** environ;
 //         char** env = environ;
 //         // need args for execve and so one
@@ -91,7 +93,7 @@ int    GetMethod(t_client& client, Server server)
 
     // // is cgi request
     // if (isCGI(req_path, server.getLocation(loc_pos)->get_cgi_ext()))
-    //     CGI_handler(client, server);
+    //     CGI_handler(client, server, loc_pos);
 
     // if we dont have a spesific file in that location
     if (req_path.substr(server.getLocation(loc_pos)->getPath().size()).size() == 0 || req_path.at(req_path.size() - 1) == '/')

@@ -227,8 +227,7 @@ string  getRightRoot(Server server, int loc_pos)
        return (server.getLocation(loc_pos)->getRoot());
     else if (server.getValue("root").size())
         return (server.getValue("root"));
-    else
-        return("");
+    return ("");
 }
 
 string  getRightContent(int fd)
@@ -242,7 +241,7 @@ string  getRightContent(int fd)
         bzero(buffer, 1024);
         r = read(fd, buffer, 1023);
         if (r >= 0)
-        content.append(buffer, r);
+            content.append(buffer, r);
     }
     return (content);
 }

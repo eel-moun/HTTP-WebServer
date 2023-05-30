@@ -24,6 +24,7 @@ void	checkDefault(ConfigFile& config)
 			throw invalid_argument("config file syntax error no host");
 		if (!config.getServer(i)->get_listens().size())
 			throw invalid_argument("config file syntax error no port to listen");
+		count = 0;
 	}
 }
 
