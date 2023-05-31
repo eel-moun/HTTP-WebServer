@@ -90,37 +90,3 @@ int main(int ac, char **av)
 
     return (0);
 }
-
-
-/*
-        if (buffer.find("\r\n") == string::npos)
-        {
-            tmp = buffer.substr(0);
-            buffer.erase(0, buffer.size());
-            while(buffer.find("\r\n") == string::npos && buffer.size() < len)
-            {   
-                bzero(buffer1,1024);
-                r = read(client.new_sock_fd, buffer1, 1023);
-                if(r >= 0)
-                    buffer += string(buffer1,r);
-            }
-            tmp += buffer.substr(0, buffer.find("\r\n"));
-            buffer.erase(0, buffer.find("\r\n") + 2);
-        }else
-        {
-            tmp = buffer.substr(0, buffer.find("\r\n"));
-            buffer.erase(0, buffer.find("\r\n") + 2);
-        }
-        cout << tmp.size() << endl;
-        cout << "<--------------->" << endl;
-
-        if(len == -1 && tmp.size())
-        {
-            len = std::stol(tmp, 0, 16);
-        }
-        else{
-            client.body += tmp;
-            max_lenght += len;
-            len = -1;
-        }
-    }*/

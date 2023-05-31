@@ -35,6 +35,8 @@ bool isDirectory(const string path)
 
 bool isCGI(string path, string ext)
 {
+    if (!ext.size())
+        return (false);
     if (!path.compare(path.size() - ext.size(), path.size(), ext))
         return (true);
     else
@@ -55,7 +57,7 @@ int    CGI_handler(t_client& client, Server server, string path_to_serve, int lo
 {
     int     pipes[2];
     int     status;
-    pid_t   pid, wait;
+    pid_t   pid;
     string  body;
     char    c;
 
@@ -66,14 +68,45 @@ int    CGI_handler(t_client& client, Server server, string path_to_serve, int lo
     pid = fork();
     if (pid == -1)
         throw runtime_error("fork failed");
-    else if (pid)
+    else if (pid == 0)
+    {
+        if (dup2(pipes[1], STDOUT_FILENO) == -1 || close(pipes[1]) == -1 || close(pipes[0]) == -1)
+	    		throw runtime_error("dup2() or close() failed");
+
+        setenv("REQUEST_METHOD", "GET", 1);
+        setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
+        setenv("PATH_INFO", client.request["path"].substr(server.getLocation(loc_pos)->getPath().size(), client.request["path"].find("?")).c_str(), 1);
+        setenv("SCRIPT_FILENAME", path_to_serve.append(client.request["path"].substr(server.getLocation(loc_pos)->getPath().size())).c_str(), 1);
+        setenv("REDIRECT_STATUS", "", 1);
+        setenv("SERVER_NAME", server.getValue("host").c_str(), 1);
+        setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
+
+        extern char** environ;
+        char** env = environ;
+
+        const string& cgiPath = server.getLocation(loc_pos)->get_cgi_path();
+        const char* arg1 = cgiPath.c_str();
+
+        char* args[] = {(char*)arg1, (char*)path_to_serve.c_str(), NULL};
+        if (!server.getLocation(loc_pos)->get_cgi_ext().compare("py"))
+        {
+            if (execve(server.getLocation(loc_pos)->get_cgi_path().c_str(), NULL, env) == -1)
+                cout << strerror(errno) << endl;
+        }
+        else
+        {
+            if (execve(server.getLocation(loc_pos)->get_cgi_path().c_str(), args, env) == -1)
+                cout << strerror(errno) << endl;
+        }
+
+        exit(1);
+    }
+    else
     {
         if (close(pipes[1]) == -1)
             throw runtime_error("dup2() or close() failed");
-        wait = waitpid(pid, &status, 0);
-        if (wait == -1)
-            throw runtime_error("wait failed");
-        else if (status != 0)
+        waitpid(pid, &status, 0);
+        if (status != 0)
             throw runtime_error("wait faild with 409");
 
         while (read(pipes[0], &c, 1) > 0)
@@ -85,28 +118,7 @@ int    CGI_handler(t_client& client, Server server, string path_to_serve, int lo
         body = cgi_out[cgi_out.size() - 1];
         return (GenerateResponse(body, ".html", 200, client), 0);
     }
-    else
-    {
-        if (dup2(pipes[1], STDOUT_FILENO) == -1 || close(pipes[1]) == -1 || close(pipes[0]) == -1)
-	    		throw runtime_error("dup2() or close() failed");
-
-        setenv("REQUEST_METHOD", "GET", 1);
-        setenv("SCRIPT_FILENAME", client.request["path"].substr(server.getLocation(loc_pos)->getPath().size()).c_str(), 1);
-        setenv("PATH_INFO", path_to_serve.append(client.request["path"].substr(server.getLocation(loc_pos)->getPath().size())).c_str(), 1);
-        setenv("REDIRECT_STATUS", "", 1);
-        extern char** environ;
-        char** env = environ;
-        // const char * arg1 = server.getLocation(loc_pos)->get_cgi_path().c_str();
-
-        const string& cgiPath = server.getLocation(loc_pos)->get_cgi_path();
-        const char* arg1 = cgiPath.c_str();
-
-        char* args[] = {(char*)arg1, (char*)path_to_serve.append(client.request["path"].substr(server.getLocation(loc_pos)->getPath().size())).c_str(), NULL};
-        if (execve(server.getLocation(loc_pos)->get_cgi_path().c_str(), args, env) == -1)
-            cout << strerror(errno) << endl;
-        exit(1);
-        // need args for execve and so one
-    }
+    return (0);
 }
 
 int    GetMethod(t_client& client, Server server)
@@ -117,7 +129,7 @@ int    GetMethod(t_client& client, Server server)
     int loc_pos;
     int fd;
 
-    req_path = client.request["path"].substr(0, req_path.find("?"));
+    req_path = client.request["path"].substr(0, client.request["path"].find("?"));
     loc_pos = getRightLocation(req_path, server);
     path_to_serve = getRightRoot(server, loc_pos);
 

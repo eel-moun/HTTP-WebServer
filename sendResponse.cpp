@@ -193,6 +193,8 @@ int  getRightLocation(string req_path, Server server)
     for (size_t i = 0; i < server.getSize(); i++)
     {
         loc_path = server.getLocation(i)->getPath();
+        if(!loc_path.compare(req_path))
+            return i;
         if (loc_path.compare("/"))
             loc_path.append("/");
 
@@ -203,19 +205,13 @@ int  getRightLocation(string req_path, Server server)
                 if (req_path[z] == '/')
                     count++;
             }
-            else
-            {
-                count = 0;
-                break;
-            }
         }
-
         if(temp < count)
         {
             temp = count;
             j = i;
-            count = 0;
         }
+            count = 0;
     }
 
     return (j);
@@ -283,16 +279,13 @@ Server getRightServer(vector<Server *> servers, t_client client)
     if (servers.size() == 1)
         return (*servers[0]);
 
-    if (!host.size())
-        throw runtime_error("no host available to check");
     if(port.size())
     {
         for (size_t i = 0; i < servers.size(); i++)
         {
-            if (servers[i]->getValue("host") == host)
-                for(size_t j = 0; j < servers[i]->get_listens().size(); j++)
-                    if(servers[i]->get_listens().at(j) == port)
-                        return (*servers[i]);
+            for(size_t j = 0; j < servers[i]->get_listens().size(); j++)
+                if(servers[i]->get_listens().at(j) == port)
+                    return (*servers[i]);
         }
     }else
     {
