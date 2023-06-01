@@ -33,51 +33,93 @@ bool isDirectory(const string path)
     return false;
 }
 
-// bool isCGI(string path, string ext)
-// {
-//     if (!path.compare(path.size() - ext.size(), path.size(), ext))
-//         return (true);
-//     else
-//         return (false);
-// }
+bool isCGI(string path, string ext)
+{
+    if (!ext.size())
+        return (false);
+    if (!path.compare(path.size() - ext.size(), path.size(), ext))
+        return (true);
+    else
+        return (false);
+}
 
-// int    CGI_handler(t_client& client, Server server, int loc_pos)
-// {
-//     int     pipes[2];
-//     int     status;
-//     pid_t   pid, wait;
-    
-//     if (pipe(pipes) == -1)
-//         throw std::runtime_error("pipe failed");
-    
-//     pid = fork();
-//     if (pid == -1)
-//         throw std::runtime_error("fork failed");
-//     else if (pid)
-//     {
-//         wait = waitpid(pid, &status, 0);
-//         if (wait == -1)
-//             throw std::runtime_error("wait failed");
-//         if (WIFEXITED(status))
-//             return WEXITSTATUS(status);
-//         else if (WIFSIGNALED(status))
-// 		    return WTERMSIG(status);
-//         else
-//             return (1);
-//     }
-//     else
-//     {
-//         if (dup2(pipes[0], STDIN_FILENO) == -1 || close(pipes[1]) == -1 || close(pipes[0]) == -1)
-// 	    		throw std::runtime_error("dup2() of close() failed");
+vector<string> split(string request, string lims) {
+    vector<string> end;
+    size_t x = request.find(lims);
+    if (x == string::npos)
+        return (end.push_back(request), end);
+    end.push_back(request.substr(0, x));
+    end.push_back(request.substr(x + lims.length(), request.length() - x));
+    return end;
+}
 
-//         setenv("REQUEST_METHOD", "GET", 1);
-//         if (server.getLocation(loc_pos).get)
-//         setenv("PATH_INFO", server.getValue("root").c_str(), 1);
-//         extern char** environ;
-//         char** env = environ;
-//         // need args for execve and so one
-//     }
-// }
+int    CGI_handler(t_client& client, Server server, string path_to_serve, int loc_pos)
+{
+    int     pipes[2];
+    int     status;
+    pid_t   pid;
+    string  body;
+    char    c;
+
+    
+    if (pipe(pipes) == -1)
+        throw runtime_error("pipe failed");
+    
+    pid = fork();
+    if (pid == -1)
+        throw runtime_error("fork failed");
+    else if (pid == 0)
+    {
+        if (dup2(pipes[1], STDOUT_FILENO) == -1 || close(pipes[1]) == -1 || close(pipes[0]) == -1)
+	    		throw runtime_error("dup2() or close() failed");
+
+        setenv("REQUEST_METHOD", "GET", 1);
+        setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
+        setenv("PATH_INFO", client.request["path"].substr(server.getLocation(loc_pos)->getPath().size(), client.request["path"].find("?")).c_str(), 1);
+        setenv("SCRIPT_FILENAME", path_to_serve.append(client.request["path"].substr(server.getLocation(loc_pos)->getPath().size())).c_str(), 1);
+        setenv("REDIRECT_STATUS", "", 1);
+        setenv("SERVER_NAME", server.getValue("host").c_str(), 1);
+        setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
+
+        extern char** environ;
+        char** env = environ;
+
+        const string& cgiPath = server.getLocation(loc_pos)->get_cgi_path();
+        const char* arg1 = cgiPath.c_str();
+
+        char* args[] = {(char*)arg1, (char*)path_to_serve.c_str(), NULL};
+        if (!server.getLocation(loc_pos)->get_cgi_ext().compare("py"))
+        {
+            if (execve(server.getLocation(loc_pos)->get_cgi_path().c_str(), NULL, env) == -1)
+                cout << strerror(errno) << endl;
+        }
+        else
+        {
+            if (execve(server.getLocation(loc_pos)->get_cgi_path().c_str(), args, env) == -1)
+                cout << strerror(errno) << endl;
+        }
+
+        exit(1);
+    }
+    else
+    {
+        if (close(pipes[1]) == -1)
+            throw runtime_error("dup2() or close() failed");
+        waitpid(pid, &status, 0);
+        if (status != 0)
+            throw runtime_error("wait faild with 409");
+
+        while (read(pipes[0], &c, 1) > 0)
+            body.push_back(c);
+        close(pipes[0]);
+        vector<string> cgi_out = split(body, "\r\n\r\n");
+        if (cgi_out.size() != 2)
+            throw runtime_error("no heder or body in cgi_out error 502");
+        body = cgi_out[cgi_out.size() - 1];
+        return (GenerateResponse(body, ".html", 200, client), 0);
+    }
+    return (0);
+}
 
 int    GetMethod(t_client& client, Server server)
 {
@@ -87,13 +129,13 @@ int    GetMethod(t_client& client, Server server)
     int loc_pos;
     int fd;
 
-    req_path = client.request["path"].substr(0, req_path.find("?"));
+    req_path = client.request["path"].substr(0, client.request["path"].find("?"));
     loc_pos = getRightLocation(req_path, server);
     path_to_serve = getRightRoot(server, loc_pos);
 
-    // // is cgi request
-    // if (isCGI(req_path, server.getLocation(loc_pos)->get_cgi_ext()))
-    //     CGI_handler(client, server, loc_pos);
+    // is cgi request
+    if (isCGI(req_path, server.getLocation(loc_pos)->get_cgi_ext()))
+        return (CGI_handler(client, server, path_to_serve, loc_pos));
 
     // if we dont have a spesific file in that location
     if (req_path.substr(server.getLocation(loc_pos)->getPath().size()).size() == 0 || req_path.at(req_path.size() - 1) == '/')
