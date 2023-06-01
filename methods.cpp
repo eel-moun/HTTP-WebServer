@@ -53,6 +53,21 @@ vector<string> split(string request, string lims) {
     return end;
 }
 
+int    CGI_response(vector<string> cgi_out, t_client& client)
+{
+    string Content_Type;
+
+    stringstream ss2(lineToParse("Content-Type", cgi_out[0]));
+    if (getline(ss2, Content_Type, ' '))
+    {
+        if (Content_Type.compare("Content-Type:"))
+            throw runtime_error("unwanted value1");// 7ta nlo7o chi error code hna
+        getline(ss2, Content_Type, ';');
+    }
+
+    return (GenerateResponse(cgi_out[1], Content_Type, 200, client), 0);
+}
+
 int    CGI_handler(t_client& client, Server server, string path_to_serve, int loc_pos)
 {
     int     pipes[2];
@@ -71,7 +86,7 @@ int    CGI_handler(t_client& client, Server server, string path_to_serve, int lo
     else if (pid == 0)
     {
         if (dup2(pipes[1], STDOUT_FILENO) == -1 || close(pipes[1]) == -1 || close(pipes[0]) == -1)
-	    		throw runtime_error("dup2() or close() failed");
+	    	throw runtime_error("dup2() or close() failed");
 
         setenv("REQUEST_METHOD", "GET", 1);
         setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
@@ -88,16 +103,9 @@ int    CGI_handler(t_client& client, Server server, string path_to_serve, int lo
         const char* arg1 = cgiPath.c_str();
 
         char* args[] = {(char*)arg1, (char*)path_to_serve.c_str(), NULL};
-        if (!server.getLocation(loc_pos)->get_cgi_ext().compare("py"))
-        {
-            if (execve(server.getLocation(loc_pos)->get_cgi_path().c_str(), NULL, env) == -1)
-                cout << strerror(errno) << endl;
-        }
-        else
-        {
-            if (execve(server.getLocation(loc_pos)->get_cgi_path().c_str(), args, env) == -1)
-                cout << strerror(errno) << endl;
-        }
+
+        if (execve(cgiPath.c_str(), args, env) == -1)
+            cout << strerror(errno) << endl;
 
         exit(1);
     }
@@ -106,17 +114,28 @@ int    CGI_handler(t_client& client, Server server, string path_to_serve, int lo
         if (close(pipes[1]) == -1)
             throw runtime_error("dup2() or close() failed");
         waitpid(pid, &status, 0);
-        if (status != 0)
-            throw runtime_error("wait faild with 409");
 
         while (read(pipes[0], &c, 1) > 0)
             body.push_back(c);
         close(pipes[0]);
+
         vector<string> cgi_out = split(body, "\r\n\r\n");
-        if (cgi_out.size() != 2)
-            throw runtime_error("no heder or body in cgi_out error 502");
+        if (cgi_out.size() == 1)
+        {
+            // that mean im only have the body and am gonna assume the contect-type contect-length
+            return (GenerateResponse(cgi_out[cgi_out.size() - 1], "text/plain", 200, client), 0);
+        }
+        else if (cgi_out.size() == 2)
+        {
+            CGI_response(cgi_out, client);
+        }
+        else
+        {
+            cerr << "error in cgi script output" << endl;
+        }
+        //     throw runtime_error("no heder or body in cgi_out error 502");
         body = cgi_out[cgi_out.size() - 1];
-        return (GenerateResponse(body, ".html", 200, client), 0);
+        
     }
     return (0);
 }

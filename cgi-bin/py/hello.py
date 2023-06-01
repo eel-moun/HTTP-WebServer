@@ -1,5 +1,5 @@
 print("Content-Type: text/html")
-print()
+print("\r\n\r\n")
 print("<html>")
 print(" <head>")
 print("  <title>Hello World</title>")
