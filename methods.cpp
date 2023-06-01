@@ -131,7 +131,7 @@ int    GetMethod(t_client& client, Server server)
         else if (server.getValue("root").size())
             path_to_serve = server.getValue("root").append(req_path);
         else
-            return (GenerateResponse("", "", 405, client), 1); //
+            return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 405, client), 1); //
 
         if (isDirectory(path_to_serve))
         {
@@ -177,7 +177,7 @@ void    PostMethod(t_client& client, Server& server)
         GenerateResponse("", "", 201, client);
     }
     else
-        GenerateResponse("", "", 500, client);
+        GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 500, client);
 }
 
 void    DeleteMethod(t_client& client, Server server)
@@ -194,9 +194,7 @@ void    DeleteMethod(t_client& client, Server server)
     if(dir != NULL)
     {
         while((pDirent = readdir(dir)) != NULL)
-        {
             remove((filename +'/'+ pDirent->d_name).c_str());
-        }
     }
     remove(filename.c_str());
 }

@@ -101,6 +101,9 @@ void normalBody(t_client& client,string buffer)
     size_t lenght = strtol(client.request["lenght"].c_str(),0,10);
     size_t lenght2 = 0;
 
+    if((size_t)strtol(client.request["max_size"].c_str(),0,10) < lenght){
+        GenerateResponse("", "", 400, client);
+    }
     if(client.body.size() == 0)
     {
         buffer.erase(0, buffer.find("\r\n\r\n") + 4);
@@ -133,6 +136,4 @@ void fillBody(t_client& client,string buffer)
         normalBody(client, buffer);
     else if(!client.request["Transfer-Encoding"].compare("chunked"))
         chunkedToNormal(client, buffer);
-    // else
-    //     GenerateResponse("", "", 400, client);
 }
