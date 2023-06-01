@@ -203,8 +203,9 @@ void    PostMethod(t_client& client, Server& server)
 
     L = getRightLocation(client.request["path"], server);
     filename = client.request["path"].substr(client.request["path"].find_last_of('/', string::npos));
-    if(!filename.compare(client.request["path"]))
-        filename = filename.substr(client.request["path"].size());
+    cout << server.getLocation(L)->getPath() << endl;
+    if(!filename.compare(server.getLocation(L)->getPath()))
+        filename = filename.substr(server.getLocation(L)->getPath().size());
     if (filename.size() == 0 || !filename.compare("/"))
         filename = '/'+ generateRandomString(10) + getContentTypeExt(client.request["media-type"]);
     cout << getRightRoot(server, L) << endl;

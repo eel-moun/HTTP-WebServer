@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <poll.h>
 #include <fcntl.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 
 using namespace std;

@@ -41,10 +41,11 @@ void chunkedToNormal(t_client& client, string buffer)
         if(r >= 0)
             buffer += string(buffer1,r);
         tmp = buffer.substr(0, buffer.find("\r\n"));
-        buffer.erase(0, buffer.find("\r\n") + 2);
+        buffer.erase(0, buffer.find("\r\n") + 2); 
 
         if(tmp.size())
         {
+            cout << tmp << endl;
             len = std::stol(tmp, 0, 16);
             tmp.clear();
         }
@@ -98,26 +99,24 @@ void normalBody(t_client& client,string buffer)
 {
     int r = 0;
     char buffer1[1024];
-    size_t lenght = strtol(client.request["lenght"].c_str(),0,10);
-    size_t lenght2 = 0;
+    size_t length = strtol(client.request["length"].c_str(),0,10);
+    size_t length2 = 0;
 
-    if((size_t)strtol(client.request["max_size"].c_str(),0,10) < lenght){
-        GenerateResponse("", "", 400, client);
-    }
     if(client.body.size() == 0)
     {
         buffer.erase(0, buffer.find("\r\n\r\n") + 4);
-        lenght2 = buffer.find("\r\n\r\n") + 4;
+        length2 = buffer.find("\r\n\r\n") + 4;
         buffer.erase(0, buffer.find("\r\n\r\n") + 4);
     }
     client.body += buffer;
-    while((client.body.size()+ lenght2) < lenght)
+    while((client.body.size()+ length2) < length)
     {
         bzero(buffer1,1024);
         r = read(client.new_sock_fd, buffer1, 1023);
         if (r != -1)
             client.body += string(buffer1,r);
     }
+    cout << client.body.size() << endl;
 }
 
 string generateRandomString(int length) {
@@ -132,7 +131,7 @@ string generateRandomString(int length) {
 
 void fillBody(t_client& client,string buffer)
 {
-    if(client.request["lenght"].size())
+    if(client.request["length"].size())
         normalBody(client, buffer);
     else if(!client.request["Transfer-Encoding"].compare("chunked"))
         chunkedToNormal(client, buffer);

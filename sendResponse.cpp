@@ -206,7 +206,7 @@ int  getRightLocation(string req_path, Server server)
                     count++;
             }
         }
-        if(temp < count)
+        if(temp < count || (temp == 1 && loc_path.size() == 1))
         {
             temp = count;
             j = i;

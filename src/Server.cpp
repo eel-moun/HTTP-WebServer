@@ -81,7 +81,7 @@ void Server::setServ_addr(){
         if (!this->getValue("host").compare("localhost")) // possible_error
             addr->sin_addr.s_addr = INADDR_ANY;
         else
-            addr->sin_addr.s_addr = ft_inet_addr(this->getValue("host")); // possible_error
+            addr->sin_addr.s_addr = inet_addr(this->getValue("host").c_str()); // possible_error
         cout << listens[i] << endl;
         addr->sin_port = htons(stoi(listens[i]));
 
