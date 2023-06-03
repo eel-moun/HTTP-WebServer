@@ -1,10 +1,13 @@
-print("Content-Type: text/html")
-print("\r\n\r\n")
+import sys
+
+sys.stdout.write("Content-Type: text/html\r\n")
+
+print("\r\n\r")
 print("<html>")
 print(" <head>")
 print("  <title>Hello World</title>")
 print(" </head>")
 print(" <body>")
-print(" <?php echo '<p>Hello World</p>'; ?>")
+print("<p>Hello World</p>")
 print(" </body>")
 print("</html>")
