@@ -37,7 +37,7 @@ class ConfigFile{
         size_t    getSocketNum();
 };
 
-void            parseRequest(t_client& client, string buffer);
+void            parseRequest(t_client& client, string buffer, vector<Server*> servers);
 string          lineToParse(string key, string buffer);
 void            makeResponse(t_client& client, Server server);
 int             GetMethod(t_client& client, Server server);

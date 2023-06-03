@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-void parseRequest(t_client& client, string buffer)
+void parseRequest(t_client& client, string buffer, vector<Server*> servers)
 {
     string key[3] = {"method", "path", "protocol"};
     string str;
@@ -46,6 +46,8 @@ void parseRequest(t_client& client, string buffer)
             throw runtime_error("unwanted value");
         if (getline(ss3, str, ' '))
             client.request["length"] = str;
+        if(stoi(getRightServer(servers, client).getValue("max_size")) < stoi(client.request["length"]))
+            throw runtime_error("size bigger than max size");
     }
 
     stringstream ss4(lineToParse("Transfer-Encoding", buffer));
