@@ -1,4 +1,6 @@
 #include "headers/ConfigFile.hpp"
+#include <sys/types.h>
+#include <sys/wait.h>
 
 string  generateAutoIndex(string path)
 {
@@ -53,10 +55,25 @@ vector<string> split(string request, string lims) {
     return end;
 }
 
+int    CGI_response(vector<string> cgi_out, t_client& client)
+{
+    string Content_Type;
+
+    stringstream ss2( cgi_out[0]);
+    if (getline(ss2, Content_Type, ' '))
+    {
+        if (Content_Type.compare("Content-Type:"))
+            throw runtime_error("unwanted value1");// 7ta nlo7o chi error code hna
+        getline(ss2, Content_Type, ';');
+    }
+
+    return (GenerateResponse(cgi_out[1], Content_Type, 200, client), 0);
+}
+
 int    CGI_handler(t_client& client, Server server, string path_to_serve, int loc_pos)
 {
     int     pipes[2];
-    int     status;
+    int     status = 0;
     pid_t   pid;
     string  body;
     char    c;
@@ -71,7 +88,7 @@ int    CGI_handler(t_client& client, Server server, string path_to_serve, int lo
     else if (pid == 0)
     {
         if (dup2(pipes[1], STDOUT_FILENO) == -1 || close(pipes[1]) == -1 || close(pipes[0]) == -1)
-	    		throw runtime_error("dup2() or close() failed");
+	    	throw runtime_error("dup2() or close() failed");
 
         setenv("REQUEST_METHOD", "GET", 1);
         setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
@@ -88,17 +105,10 @@ int    CGI_handler(t_client& client, Server server, string path_to_serve, int lo
         const char* arg1 = cgiPath.c_str();
 
         char* args[] = {(char*)arg1, (char*)path_to_serve.c_str(), NULL};
-        if (!server.getLocation(loc_pos)->get_cgi_ext().compare("py"))
-        {
-            if (execve(server.getLocation(loc_pos)->get_cgi_path().c_str(), NULL, env) == -1)
-                cout << strerror(errno) << endl;
-        }
-        else
-        {
-            if (execve(server.getLocation(loc_pos)->get_cgi_path().c_str(), args, env) == -1)
-                cout << strerror(errno) << endl;
-        }
 
+        if (execve(cgiPath.c_str(), args, env) == -1)
+            cout << strerror(errno) << endl;
+        cout << "mok" << endl;
         exit(1);
     }
     else
@@ -107,16 +117,29 @@ int    CGI_handler(t_client& client, Server server, string path_to_serve, int lo
             throw runtime_error("dup2() or close() failed");
         waitpid(pid, &status, 0);
         if (status != 0)
-            throw runtime_error("wait faild with 409");
+            throw runtime_error("toooooooooooo");
 
         while (read(pipes[0], &c, 1) > 0)
             body.push_back(c);
         close(pipes[0]);
+
         vector<string> cgi_out = split(body, "\r\n\r\n");
-        if (cgi_out.size() != 2)
-            throw runtime_error("no heder or body in cgi_out error 502");
+        if (cgi_out.size() == 1)
+        {
+            // that mean im only have the body and am gonna assume the contect-type contect-length
+            return (GenerateResponse(cgi_out[cgi_out.size() - 1], "text/plain", 200, client), 0);
+        }
+        else if (cgi_out.size() == 2)
+        {
+            CGI_response(cgi_out, client);
+        }
+        else
+        {
+            cerr << "error in cgi script output" << endl;
+        }
+        //     throw runtime_error("no heder or body in cgi_out error 502");
         body = cgi_out[cgi_out.size() - 1];
-        return (GenerateResponse(body, ".html", 200, client), 0);
+        
     }
     return (0);
 }
@@ -195,6 +218,89 @@ int    GetMethod(t_client& client, Server server)
     return (1);
 }
 
+int    CGI_handler_post(t_client& client, Server server, string path_to_serve, int loc_pos)
+{
+    int     pipes[2];
+    int     status = 0;
+    pid_t   pid;
+    string  body;
+    char    c;
+
+    
+    if (pipe(pipes) == -1)
+        throw runtime_error("pipe failed");
+    
+    pid = fork();
+    if (pid == -1)
+        throw runtime_error("fork failed");
+    else if (pid)
+    {
+        if (dup2(pipes[1], STDOUT_FILENO) == -1 || close(pipes[1]) == -1 || close(pipes[0]) == -1)
+	    	throw runtime_error("dup2() or close() failed");
+
+        setenv("REQUEST_METHOD", "POST", 1);
+        setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
+        setenv("PATH_INFO", client.request["path"].substr(server.getLocation(loc_pos)->getPath().size(), client.request["path"].find("?")).c_str(), 1);
+        setenv("SCRIPT_FILENAME", path_to_serve.append(client.request["path"].substr(server.getLocation(loc_pos)->getPath().size())).c_str(), 1);
+        setenv("REDIRECT_STATUS", "", 1);
+        setenv("SERVER_NAME", server.getValue("host").c_str(), 1);
+        setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
+        setenv("CONTENT_TYPE", client.request["media-type"].c_str(), 1);
+        setenv("CONTENT_LENGTH", client.request["length"].c_str(), 1);
+
+        extern char** environ;
+        char** env = environ;
+
+        const string& cgiPath = server.getLocation(loc_pos)->get_cgi_path();
+        const char* arg1 = cgiPath.c_str();
+
+        char* args[] = {(char*)arg1, (char*)path_to_serve.c_str(), NULL};
+
+        ofstream tmpfile(path_to_serve);
+        if (!tmpfile.is_open())
+            return (cerr << "faild to open tmpfile" << endl, exit(1), 1);
+        tmpfile << client.body;
+        tmpfile.close();
+
+        if (execve(cgiPath.c_str(), args, env) == -1)
+            cout << strerror(errno) << endl;
+        cout << "mok" << endl;
+        exit(1);
+    }
+    else
+    {
+        if (close(pipes[1]) == -1)
+            throw runtime_error("dup2() or close() failed");
+        waitpid(pid, &status, 0);
+        if (status != 0)
+            throw runtime_error("toooooooooooo");
+
+        while (read(pipes[0], &c, 1) > 0)
+            body.push_back(c);
+        close(pipes[0]);
+        unlink(path_to_serve.append(client.request["path"]).c_str());
+
+        vector<string> cgi_out = split(body, "\r\n\r\n");
+        if (cgi_out.size() == 1)
+        {
+            // that mean im only have the body and am gonna assume the contect-type contect-length
+            return (GenerateResponse(cgi_out[cgi_out.size() - 1], "text/plain", 200, client), 0);
+        }
+        else if (cgi_out.size() == 2)
+        {
+            CGI_response(cgi_out, client);
+        }
+        else
+        {
+            cerr << "error in cgi script output" << endl;
+        }
+        //     throw runtime_error("no heder or body in cgi_out error 502");
+        body = cgi_out[cgi_out.size() - 1];
+        
+    }
+    return (0);
+}
+
 void    PostMethod(t_client& client, Server& server)
 {
     string filename;
@@ -204,10 +310,18 @@ void    PostMethod(t_client& client, Server& server)
     L = getRightLocation(client.request["path"], server);
     filename = client.request["path"].substr(client.request["path"].find_last_of('/', string::npos));
     cout << server.getLocation(L)->getPath() << endl;
+
+    if (isCGI(client.request["path"].substr(0, client.request["path"].find("?")), server.getLocation(L)->get_cgi_ext()))
+    {
+        CGI_handler_post(client, server, getRightRoot(server, L), L);
+        return ;
+    }
+
     if(!filename.compare(server.getLocation(L)->getPath()))
         filename = filename.substr(server.getLocation(L)->getPath().size());
     if (filename.size() == 0 || !filename.compare("/"))
         filename = '/'+ generateRandomString(10) + getContentTypeExt(client.request["media-type"]);
+
     cout << getRightRoot(server, L) << endl;
     cout << server.getLocation(L)->get_upload_dir() << endl;
     cout << filename << endl;

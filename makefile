@@ -11,14 +11,14 @@ PATH_OBJ = obj/
 
 CC = c++
 
-FLAGS = -Wall -Wextra -Werror -std=c++98 -g
+FLAGS = -Wall -Wextra -Werror -g -std=c++11
 
 OBJ = $(addprefix $(PATH_OBJ), $(SRC:.cpp=.o))
 
 all: $(NAME)
 
 $(NAME): $(OBJ) $(HEADERS)
-	$(CC) $(FLAGS) -o $(NAME) $(SRC)
+	$(CC) -g $(FLAGS) -o $(NAME) $(SRC)
 
 $(OBJ) : $(PATH_OBJ)%.o: %.cpp $(HEADERS)
 	@mkdir -p $(dir $@)
