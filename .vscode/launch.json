@@ -8,7 +8,7 @@
             "name": "(lldb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/web-server-bonus/websrv",
+            "program": "${workspaceFolder}/websrv",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

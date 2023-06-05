@@ -171,7 +171,7 @@ int    GetMethod(t_client& client, Server server)
             if (isDirectory(path_to_serve.append(req_path.substr(server.getLocation(loc_pos)->getPath().size()))))
             {
                 if (req_path.at(req_path.size() - 1) != '/')
-                    return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 301, client, ""), 1);
+                    return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), "text/html", 301, client, ""), 1);
                 else if (!server.getValue("autoindex").compare("ON") || !server.getLocation(loc_pos)->getAutoIndex().compare("ON"))
                     return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client, ""), 0);
             }
@@ -184,7 +184,7 @@ int    GetMethod(t_client& client, Server server)
                     return (GenerateResponse(getRightContent(fd), getContentType(server.getLocation(loc_pos)->getIndex(i)), 200, client, ""), 0);
             test_file = path_to_serve;
         }
-        return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 404, client, ""), 1);
+        return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), "text/html", 404, client, ""), 1);
     }
     else
     {
@@ -198,12 +198,12 @@ int    GetMethod(t_client& client, Server server)
         else if (server.getValue("root").size())
             path_to_serve = server.getValue("root").append(req_path);
         else
-            return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 405, client, ""), 1); //
+            return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), "text/html", 405, client, ""), 1); //
 
         if (isDirectory(path_to_serve))
         {
             if (req_path.at(req_path.size() - 1) != '/')
-                return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 301, client, ""), 1);
+                return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), "text/html", 301, client, ""), 1);
             return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client, ""), 0);
         }
         fd = open(path_to_serve.c_str(), O_RDONLY);
@@ -215,7 +215,7 @@ int    GetMethod(t_client& client, Server server)
                 return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client, ""), 0);
         }
         else
-            return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 404, client, ""), 1);
+            return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), "text/html", 404, client, ""), 1);
     }
     return (1);
 }
@@ -343,7 +343,7 @@ void    PostMethod(t_client& client, Server& server)
         GenerateResponse("", "", 201, client, "");
     }
     else
-        GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 500, client, "");
+        GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".text/html", 500, client, "");
 }
 
 void    DeleteMethod(t_client& client, Server server)

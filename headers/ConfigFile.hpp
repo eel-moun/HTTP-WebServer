@@ -37,7 +37,7 @@ class ConfigFile{
         size_t    getSocketNum();
 };
 
-void            parseRequest(t_client& client, string buffer, vector<Server*> servers);
+int            parseRequest(t_client& client, string buffer, vector<Server*> servers);
 string          lineToParse(string key, string buffer);
 void            checkRedir(t_client& client, Server server);
 void            makeResponse(t_client& client, Server server);
@@ -48,8 +48,8 @@ void            GenerateResponse(const string& content, const string& content_ty
 string          getContentType(const string& path);
 string          getContentTypeExt(const string& path);
 string          generateRandomString(int length);
-void            normalBody(t_client& client,string buffer);
-void            chunkedToNormal(t_client& client, string buffer);
-void            fillBody(t_client& client,string buffer);
+void            normalBody(t_client& client, string buffer, Server server);
+void            chunkedToNormal(t_client& client, string buffer, Server server);
+void            fillBody(t_client& client,string buffer, Server server);
 
 #endif

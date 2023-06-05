@@ -5,7 +5,29 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-void parseRequest(t_client& client, string buffer, vector<Server*> servers)
+bool is_number(const string& s)
+{
+    string::const_iterator it = s.begin();
+
+    if (*it == '\0')
+        return (1);
+    while (it != s.end() && isdigit(*it))
+        ++it;
+    return !s.empty() && it == s.end();
+}
+
+int bad_request(t_client& client)
+{
+    if (!client.request["host"].size())
+        return (1);
+    else if (client.request["length"].size() && client.request["Transfer-Encoding"].size())
+        return (1);
+    else if (!is_number(client.request["length"]))
+        return (1);
+    return (0);
+}
+
+int parseRequest(t_client& client, string buffer, vector<Server*> servers)
 {
     string key[3] = {"method", "path", "protocol"};
     string str;
@@ -15,24 +37,30 @@ void parseRequest(t_client& client, string buffer, vector<Server*> servers)
     while (getline(ss, str, ' '))
         client.request[key[i++]] = str;
 
-    // if protocol != http/1.1 error code 501 Not Implemented
+    if (client.request["protocol"].compare("HTTP/1.1"))
+        GenerateResponse(getRightContent(open((const char*)servers[0]->getValue("root").append("/").append(servers[0]->getValue("default_error")).c_str(), O_RDONLY)), "text/html", 501, client, "");
 
     stringstream ss1(lineToParse("Host", buffer));
     if (getline(ss1, str, ':'))
     {
         if (str.compare("Host"))
-            throw runtime_error("unwanted value");
+        {
+            return (GenerateResponse(getRightContent(open((const char*)servers[0]->getValue("root").append("/").append(servers[0]->getValue("default_error")).c_str(), O_RDONLY)), "text/html", 400, client, ""), 1);
+        }
         if (getline(ss1, str, ':'))
             client.request["host"] = str.substr(1);
         if (getline(ss1, str, ':'))
             client.request["port"] = str;
     }
-    cout << client.request["host"] << endl;
+
+    if (!client.request["host"].size())
+        return (GenerateResponse(getRightContent(open((const char*)servers[0]->getValue("root").append("/").append(servers[0]->getValue("default_error")).c_str(), O_RDONLY)), "text/html", 400, client, ""), 1);
+
     stringstream ss2(lineToParse("Content-Type", buffer));
     if (getline(ss2, str, ' '))
     {
         if (str.compare("Content-Type:"))
-            throw runtime_error("unwanted value1");
+            return (GenerateResponse(getRightContent(open(getRightServer(servers, client).getValue("root").append("/").append(getRightServer(servers, client).getValue("default_error")).c_str(), O_RDONLY)), "text/html", 400, client, ""), 1);
         if (getline(ss2, str, ';'))
             client.request["media-type"] = str;
         if (getline(ss2, str, ';'))
@@ -43,7 +71,7 @@ void parseRequest(t_client& client, string buffer, vector<Server*> servers)
     if (getline(ss3, str, ' '))
     {
         if (str.compare("Content-Length:"))
-            throw runtime_error("unwanted value");
+            return (GenerateResponse(getRightContent(open(getRightServer(servers, client).getValue("root").append("/").append(getRightServer(servers, client).getValue("default_error")).c_str(), O_RDONLY)), "text/html", 400, client, ""), 1);
         if (getline(ss3, str, ' '))
             client.request["length"] = str;
         if(stoi(getRightServer(servers, client).getValue("max_size")) < stoi(client.request["length"]))
@@ -54,7 +82,7 @@ void parseRequest(t_client& client, string buffer, vector<Server*> servers)
     if (getline(ss5, str, ' '))
     {
         if (str.compare("Content-Disposition:"))
-            throw runtime_error("unwanted value1");
+            return (GenerateResponse(getRightContent(open(getRightServer(servers, client).getValue("root").append("/").append(getRightServer(servers, client).getValue("default_error")).c_str(), O_RDONLY)), "text/html", 400, client, ""), 1);
         getline(ss5, str, ';');
         getline(ss5, str, ';');
         if ( getline(ss5, str, ';'))
@@ -65,7 +93,7 @@ void parseRequest(t_client& client, string buffer, vector<Server*> servers)
     if (getline(ss4, str, ' '))
     {
         if (str.compare("Transfer-Encoding:"))
-            throw runtime_error("unwanted value");
+            return (GenerateResponse(getRightContent(open(getRightServer(servers, client).getValue("root").append("/").append(getRightServer(servers, client).getValue("default_error")).c_str(), O_RDONLY)), "text/html", 400, client, ""), 1);
         if (getline(ss4, str, ' '))
             client.request["Transfer-Encoding"] = str;
     }
@@ -74,8 +102,11 @@ void parseRequest(t_client& client, string buffer, vector<Server*> servers)
     if (getline(ss6, str, ' '))
     {
         if (str.compare("Cookie:"))
-            throw runtime_error("unwanted value1");
+            return (GenerateResponse(getRightContent(open(getRightServer(servers, client).getValue("root").append("/").append(getRightServer(servers, client).getValue("default_error")).c_str(), O_RDONLY)), "text/html", 400, client, ""), 1);
         if (getline(ss6, str, ';'))
             client.cookie[str.substr(0, str.find("="))] = str.substr(str.find("="));
     }
+    if (bad_request(client))
+        return (GenerateResponse(getRightContent(open(getRightServer(servers, client).getValue("root").append("/").append(getRightServer(servers, client).getValue("default_error")).c_str(), O_RDONLY)), "text/html", 400, client, ""), 1);
+    return (0);
 }

@@ -22,12 +22,13 @@ string lineToParse(string key, string buffer){
     return "";
 }
 
-void chunkedToNormal(t_client& client, string buffer)
+void chunkedToNormal(t_client& client, string buffer, Server server)
 {
     char buffer1[1024];
     string tmp;
     int r;
     long len;
+    int timeout = 0;
 
     r = 0;
     buffer.erase(0, buffer.find("\r\n\r\n") + 4);
@@ -41,11 +42,18 @@ void chunkedToNormal(t_client& client, string buffer)
         r = read(client.new_sock_fd, buffer1, 1023);
         if(r == -1)
         {
+            timeout++;
+            if(timeout == 50)
+            {
+                GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), (string&)"text/html", 408, client, "");
+                return;
+            }
             r = 0;
             continue;
         }
         if(r >= 0)
             buffer += string(buffer1,r);
+        timeout = 0;
         tmp = buffer.substr(0, buffer.find("\r\n"));
         buffer.erase(0, buffer.find("\r\n") + 2); 
         if(tmp.size())
@@ -93,10 +101,11 @@ size_t getLocationIndex(string req_path, Server server)
     return j;
 }
 
-void normalBody(t_client& client,string buffer)
+void normalBody(t_client& client, string buffer, Server server)
 {
     int r = 0;
     char buffer1[1024];
+    int timeout = 0;
     size_t length = strtol(client.request["length"].c_str(),0,10);
     size_t length2 = 0;
 
@@ -115,9 +124,22 @@ void normalBody(t_client& client,string buffer)
         bzero(buffer1,1024);
         r = read(client.new_sock_fd, buffer1, 1023);
         if (r != -1)
+        {
             client.body += string(buffer1,r);
+            timeout = 0;
+        }
+        else{
+            timeout++;
+            if(timeout == 50)
+            {
+                GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), (string&)"text/html", 408, client, "");
+                return ;
+            }
+        }
     }
-    cout << client.body.size() << endl;
+    r = read(client.new_sock_fd, buffer1, 1023);
+    if(r > 0 || (client.body.size()+ length2) > length)
+        GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), (string&)"text/html", 400, client, "");
 }
 
 string generateRandomString(int length)
@@ -131,10 +153,10 @@ string generateRandomString(int length)
     return randomString;
 }
 
-void fillBody(t_client& client,string buffer)
+void fillBody(t_client& client, string buffer, Server server)
 {
     if(client.request["length"].size())
-        normalBody(client, buffer);
+        normalBody(client, buffer, server);
     else if(!client.request["Transfer-Encoding"].compare("chunked"))
-        chunkedToNormal(client, buffer);
+        chunkedToNormal(client, buffer, server);
 }

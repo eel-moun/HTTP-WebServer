@@ -100,11 +100,13 @@ void ConfigFile::run_servers(){
                 {
                     bzero(buffer, 1024);
                     r = read(fds[i].fd, &buffer, 1023);
-                    if (!clients[i - getSocketNum()].body.size())
-                        parseRequest(clients[i - getSocketNum()], string(buffer, r), servers);
+                    if (!clients[i - getSocketNum()].body.size() && clients[i - getSocketNum()].request.empty())
+                    { 
+                        if(!parseRequest(clients[i - getSocketNum()], string(buffer, r), servers))
+                            checkRedir(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
+                    }
                     if (!clients[i - getSocketNum()].response.size())
-                        fillBody(clients[i - getSocketNum()], string(buffer,r));
-                    checkRedir(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
+                        fillBody(clients[i - getSocketNum()], string(buffer,r), getRightServer(servers, clients[i - getSocketNum()]));
                     if (!clients[i - getSocketNum()].response.size())
                         makeResponse(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
                 }
