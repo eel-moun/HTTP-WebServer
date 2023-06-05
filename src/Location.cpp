@@ -108,12 +108,10 @@ void    Location::set_return(string value)
 
     if (this->_return.size())
         throw invalid_argument("Location::set_return key already initialised");
-    stringstream ss(value);
-    while (getline(ss, token, ' '))
-        this->_return.push_back(token);
+    this->_return = value;
 }
 
-vector<string> Location::get_return()
+string Location::get_return()
 {
     return (this->_return);
 }

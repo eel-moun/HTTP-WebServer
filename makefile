@@ -11,7 +11,7 @@ PATH_OBJ = obj/
 
 CC = c++
 
-FLAGS = -Wall -Wextra -Werror -g -std=c++11
+FLAGS = -Wall -Wextra -Werror -g -std=c++98
 
 OBJ = $(addprefix $(PATH_OBJ), $(SRC:.cpp=.o))
 

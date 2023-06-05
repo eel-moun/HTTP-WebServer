@@ -1,4 +1,5 @@
 #include "../headers/ServerUtils.hpp"
+#include "../headers/ConfigFile.hpp"
 
 unsigned int ft_inet_addr(std::string str)
 {
@@ -38,5 +39,6 @@ void    Accept(vector<pollfd>& fds, vector<t_client>& clients, size_t i)
     fds.push_back(fd);
     client.new_sock_fd = clientFd;
     client.body.clear();
+    client.sessionID = generateRandomString(8);
     clients.push_back(client);
 }

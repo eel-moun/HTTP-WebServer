@@ -144,6 +144,8 @@ static const string    getStatusCode(const int status_code)
             return (" OK");
         case 201:
             return (" Created");
+        case 204:
+            return (" No Content");
         case 301:
             return (" Moved Permanently");
         case 404:
@@ -165,22 +167,26 @@ static const string    getStatusCode(const int status_code)
     }
 }
 
-void    GenerateResponse(const string& content, const string& content_type, const int status_code, t_client& client)
+void    GenerateResponse(const string& content, const string& content_type, const int status_code, t_client& client, string redir)
 {
     string response;
     stringstream ss;
 
     ss << "HTTP/1.1 " << status_code << getStatusCode(status_code) << "\r\n";
-    if (!client.request["method"].compare("GET"))
+    if (redir.size())
+        ss << "Location: " << redir << "\r\n";
+    else if (!client.request["method"].compare("GET"))
     {
         ss << "Content-Type: " << content_type << "\r\n";
         ss << "Content-Length: " << content.size() << "\r\n";
-        ss << "Connection: open\r\n\r\n";
     }
+    else
+        ss << "Content-Length: " << content.size() << "\r\n";
 
+    ss << "Set-Cookie: " << "sessionID=" << client.sessionID << "\r\n";
+    ss << "Connection: close\r\n\r\n";
     ss << content;
     client.response = ss.str();
-
 }
 
 int  getRightLocation(string req_path, Server server)
@@ -204,6 +210,11 @@ int  getRightLocation(string req_path, Server server)
             {
                 if (req_path[z] == '/')
                     count++;
+            }
+            else
+            {
+                count = 0;
+                break;
             }
         }
         if(temp < count || (temp == 1 && loc_path.size() == 1))
@@ -255,7 +266,7 @@ void    makeResponse(t_client& client, Server server)
     string method;
 
     method = client.request["method"];
-   if (checkIfMethodAllowed(server.getLocation(getRightLocation(client.request["path"].substr(0, client.request["path"].find('?')),
+    if (checkIfMethodAllowed(server.getLocation(getRightLocation(client.request["path"].substr(0, client.request["path"].find('?')),
        server))->getAllowedMethod(), method))
     {
         if (method == "GET")
@@ -265,10 +276,16 @@ void    makeResponse(t_client& client, Server server)
         else if (method == "DELETE")
             DeleteMethod(client, server);
         else
-            GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 501, client);
+            GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), (string&)"text/html", 501, client, "");
     }
     else
-       GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 405, client);
+       GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), (string&)"text/html", 405, client, "");
+}
+
+void checkRedir(t_client& client, Server server)
+{
+        if (server.getLocation(getRightLocation(client.request["path"].substr(0, client.request["path"].find('?')), server))->get_return().size())
+                GenerateResponse("", "", 301, client, server.getLocation(getRightLocation(client.request["path"].substr(0, client.request["path"].find('?')), server))->get_return());
 }
 
 Server getRightServer(vector<Server *> servers, t_client client)
@@ -287,7 +304,8 @@ Server getRightServer(vector<Server *> servers, t_client client)
                 if(servers[i]->get_listens().at(j) == port)
                     return (*servers[i]);
         }
-    }else
+    }
+    else
     {
         for (size_t i = 0; i < servers.size(); i++)
             if (servers[i]->getValue("server_name") == host)

@@ -11,7 +11,7 @@ string lineToParse(string key, string buffer){
         return res;
     }
     buffer.erase(0,pos+2);
-    while (buffer.at(0) != '\r')
+    while (buffer.find("\r\n") != string::npos)
     {
         pos = buffer.find("\r\n");
         res = buffer.substr(0, pos);
@@ -31,7 +31,8 @@ void chunkedToNormal(t_client& client, string buffer)
 
     r = 0;
     buffer.erase(0, buffer.find("\r\n\r\n") + 4);
-    buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+    if(client.request["boundary"].size())
+        buffer.erase(0, buffer.find("\r\n\r\n") + 4);
     while (r != -1 && buffer.find("0\r\n\r\n") != 0 && len != 0)
     {
         if(buffer.find("\r\n") == 0)
@@ -102,8 +103,11 @@ void normalBody(t_client& client,string buffer)
     if(client.body.size() == 0)
     {
         buffer.erase(0, buffer.find("\r\n\r\n") + 4);
-        length2 = buffer.find("\r\n\r\n") + 4;
-        buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+        if(client.request["boundary"].size())
+        {
+            length2 = buffer.find("\r\n\r\n") + 4;
+            buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+        }
     }
     client.body += buffer;
     while((client.body.size()+ length2) < length)
@@ -116,7 +120,8 @@ void normalBody(t_client& client,string buffer)
     cout << client.body.size() << endl;
 }
 
-string generateRandomString(int length) {
+string generateRandomString(int length)
+{
     string randomString;
     srand(time(0));
 

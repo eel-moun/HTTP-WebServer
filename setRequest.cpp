@@ -50,6 +50,17 @@ void parseRequest(t_client& client, string buffer, vector<Server*> servers)
             throw runtime_error("size bigger than max size");
     }
 
+    stringstream ss5(lineToParse("Content-Disposition:", buffer));
+    if (getline(ss5, str, ' '))
+    {
+        if (str.compare("Content-Disposition:"))
+            throw runtime_error("unwanted value1");
+        getline(ss5, str, ';');
+        getline(ss5, str, ';');
+        if ( getline(ss5, str, ';'))
+            client.request["filename"] = str.substr(11, str.size() - 12);
+    }
+
     stringstream ss4(lineToParse("Transfer-Encoding", buffer));
     if (getline(ss4, str, ' '))
     {
@@ -57,5 +68,14 @@ void parseRequest(t_client& client, string buffer, vector<Server*> servers)
             throw runtime_error("unwanted value");
         if (getline(ss4, str, ' '))
             client.request["Transfer-Encoding"] = str;
+    }
+
+    stringstream ss6(lineToParse("Cookie", buffer));
+    if (getline(ss6, str, ' '))
+    {
+        if (str.compare("Cookie:"))
+            throw runtime_error("unwanted value1");
+        if (getline(ss6, str, ';'))
+            client.cookie[str.substr(0, str.find("="))] = str.substr(str.find("="));
     }
 }

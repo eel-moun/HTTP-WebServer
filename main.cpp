@@ -18,8 +18,6 @@ void	checkDefault(ConfigFile& config)
 			throw invalid_argument("config file syntax error no root");
 		if (!config.getServer(i)->getValue("default_error").size())
 			throw invalid_argument("config file syntax error no default_error");
-		if (!config.getServer(i)->getValue("default_error").size())
-			throw invalid_argument("config file syntax error no default_error");
 		if (!config.getServer(i)->getValue("host").size())
 			throw invalid_argument("config file syntax error no host");
 		if (!config.getServer(i)->get_listens().size())

@@ -8,9 +8,11 @@ typedef struct Client
 {
     int new_sock_fd;
     int status_code;
-    std::map<std::string, std::string> request;
+    map<string, string> request;
+    map<string, string> cookie;
+    string sessionID;
     string body;
-    std::string response;
+    string response;
     
 }   t_client;
 

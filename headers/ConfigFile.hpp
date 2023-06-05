@@ -39,12 +39,12 @@ class ConfigFile{
 
 void            parseRequest(t_client& client, string buffer, vector<Server*> servers);
 string          lineToParse(string key, string buffer);
+void            checkRedir(t_client& client, Server server);
 void            makeResponse(t_client& client, Server server);
 int             GetMethod(t_client& client, Server server);
 void            PostMethod(t_client& client, Server& server);
 void            DeleteMethod(t_client& client, Server server);
-void            GenerateResponse(const string& content, const string& content_type, const int status_code, t_client& client);
-
+void            GenerateResponse(const string& content, const string& content_type, const int status_code, t_client& client, string redir);
 string          getContentType(const string& path);
 string          getContentTypeExt(const string& path);
 string          generateRandomString(int length);

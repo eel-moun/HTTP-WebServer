@@ -16,7 +16,7 @@ class Location{
         string upload_dir;
         string cgi_ext;
         string cgi_path;
-        vector<string> _return;
+        string _return;
         vector<string> allowed_method;
     
     public:
@@ -44,6 +44,6 @@ class Location{
         size_t  getIndexSize();
         string  get_upload_dir();
         vector<string>  getAllowedMethod();
-        vector<string> get_return();
+        string get_return();
 };
 #endif

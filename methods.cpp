@@ -67,7 +67,7 @@ int    CGI_response(vector<string> cgi_out, t_client& client)
         getline(ss2, Content_Type, ';');
     }
 
-    return (GenerateResponse(cgi_out[1], Content_Type, 200, client), 0);
+    return (GenerateResponse(cgi_out[1], Content_Type, 200, client, ""), 0);
 }
 
 int    CGI_handler(t_client& client, Server server, string path_to_serve, int loc_pos)
@@ -90,6 +90,8 @@ int    CGI_handler(t_client& client, Server server, string path_to_serve, int lo
         if (dup2(pipes[1], STDOUT_FILENO) == -1 || close(pipes[1]) == -1 || close(pipes[0]) == -1)
 	    	throw runtime_error("dup2() or close() failed");
 
+        if (client.cookie.size())
+            setenv("HTTP_COOKIE", client.cookie["sessionID"].c_str(), 1);
         setenv("REQUEST_METHOD", "GET", 1);
         setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
         setenv("PATH_INFO", client.request["path"].substr(server.getLocation(loc_pos)->getPath().size(), client.request["path"].find("?")).c_str(), 1);
@@ -127,7 +129,7 @@ int    CGI_handler(t_client& client, Server server, string path_to_serve, int lo
         if (cgi_out.size() == 1)
         {
             // that mean im only have the body and am gonna assume the contect-type contect-length
-            return (GenerateResponse(cgi_out[cgi_out.size() - 1], "text/plain", 200, client), 0);
+            return (GenerateResponse(cgi_out[cgi_out.size() - 1], "text/plain", 200, client, ""), 0);
         }
         else if (cgi_out.size() == 2)
         {
@@ -166,12 +168,12 @@ int    GetMethod(t_client& client, Server server)
     //////////////////------ get right index file ------////////////////////
         if (req_path.compare("/"))
         {
-            if (isDirectory(path_to_serve.append(req_path)))
+            if (isDirectory(path_to_serve.append(req_path.substr(server.getLocation(loc_pos)->getPath().size()))))
             {
                 if (req_path.at(req_path.size() - 1) != '/')
-                    return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 301, client), 1);
+                    return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 301, client, ""), 1);
                 else if (!server.getValue("autoindex").compare("ON") || !server.getLocation(loc_pos)->getAutoIndex().compare("ON"))
-                    return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
+                    return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client, ""), 0);
             }
         }
         test_file = path_to_serve;
@@ -179,10 +181,10 @@ int    GetMethod(t_client& client, Server server)
         {
             fd = open(test_file.append("/").append(server.getLocation(loc_pos)->getIndex(i)).c_str(), O_RDONLY);
             if (fd != -1)
-                    return (GenerateResponse(getRightContent(fd), getContentType(server.getLocation(loc_pos)->getIndex(i)), 200, client), 0);
+                    return (GenerateResponse(getRightContent(fd), getContentType(server.getLocation(loc_pos)->getIndex(i)), 200, client, ""), 0);
             test_file = path_to_serve;
         }
-        return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 404, client), 1);
+        return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 404, client, ""), 1);
     }
     else
     {
@@ -196,24 +198,24 @@ int    GetMethod(t_client& client, Server server)
         else if (server.getValue("root").size())
             path_to_serve = server.getValue("root").append(req_path);
         else
-            return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 405, client), 1); //
+            return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 405, client, ""), 1); //
 
         if (isDirectory(path_to_serve))
         {
             if (req_path.at(req_path.size() - 1) != '/')
-                return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 301, client), 1);
-            return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
+                return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 301, client, ""), 1);
+            return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client, ""), 0);
         }
         fd = open(path_to_serve.c_str(), O_RDONLY);
         if (fd != -1)
-            return (GenerateResponse(getRightContent(fd), getContentType(req_path), 200, client), 0);
+            return (GenerateResponse(getRightContent(fd), getContentType(req_path), 200, client, ""), 0);
         if (isDirectory(path_to_serve))
         {
             if (!server.getValue("autoindex").compare("ON") || !server.getLocation(loc_pos)->getAutoIndex().compare("ON"))
-                return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client), 0);
+                return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client, ""), 0);
         }
         else
-            return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 404, client), 1);
+            return (GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 404, client, ""), 1);
     }
     return (1);
 }
@@ -226,19 +228,24 @@ int    CGI_handler_post(t_client& client, Server server, string path_to_serve, i
     string  body;
     char    c;
 
-    
+    cout << client.body << endl;
     if (pipe(pipes) == -1)
         throw runtime_error("pipe failed");
     
     pid = fork();
     if (pid == -1)
         throw runtime_error("fork failed");
-    else if (pid)
+    else if (pid == 0)
     {
         if (dup2(pipes[1], STDOUT_FILENO) == -1 || close(pipes[1]) == -1 || close(pipes[0]) == -1)
 	    	throw runtime_error("dup2() or close() failed");
 
-        setenv("REQUEST_METHOD", "POST", 1);
+        if (client.cookie.size())
+            setenv("HTTP_COOKIE", client.cookie["sessionID"].c_str(), 1);
+        if (!client.request["method"].compare("GET"))
+            setenv("REQUEST_METHOD", "GET", 1);
+        else
+            setenv("REQUEST_METHOD", "POST", 1);
         setenv("GATEWAY_INTERFACE", "CGI/1.1", 1);
         setenv("PATH_INFO", client.request["path"].substr(server.getLocation(loc_pos)->getPath().size(), client.request["path"].find("?")).c_str(), 1);
         setenv("SCRIPT_FILENAME", path_to_serve.append(client.request["path"].substr(server.getLocation(loc_pos)->getPath().size())).c_str(), 1);
@@ -255,13 +262,14 @@ int    CGI_handler_post(t_client& client, Server server, string path_to_serve, i
         const char* arg1 = cgiPath.c_str();
 
         char* args[] = {(char*)arg1, (char*)path_to_serve.c_str(), NULL};
-
-        ofstream tmpfile(path_to_serve);
-        if (!tmpfile.is_open())
-            return (cerr << "faild to open tmpfile" << endl, exit(1), 1);
-        tmpfile << client.body;
-        tmpfile.close();
-
+        if (!client.request["method"].compare("POST"))
+        {
+            ofstream tmpfile(path_to_serve);
+            if (!tmpfile.is_open())
+                return (cerr << "faild to open tmpfile" << endl, exit(1), 1);
+            tmpfile << client.body;
+            tmpfile.close();
+        }
         if (execve(cgiPath.c_str(), args, env) == -1)
             cout << strerror(errno) << endl;
         cout << "mok" << endl;
@@ -278,13 +286,12 @@ int    CGI_handler_post(t_client& client, Server server, string path_to_serve, i
         while (read(pipes[0], &c, 1) > 0)
             body.push_back(c);
         close(pipes[0]);
-        unlink(path_to_serve.append(client.request["path"]).c_str());
 
         vector<string> cgi_out = split(body, "\r\n\r\n");
         if (cgi_out.size() == 1)
         {
             // that mean im only have the body and am gonna assume the contect-type contect-length
-            return (GenerateResponse(cgi_out[cgi_out.size() - 1], "text/plain", 200, client), 0);
+            return (GenerateResponse(cgi_out[cgi_out.size() - 1], "text/plain", 200, client, ""), 0);
         }
         else if (cgi_out.size() == 2)
         {
@@ -320,7 +327,7 @@ void    PostMethod(t_client& client, Server& server)
     if(!filename.compare(server.getLocation(L)->getPath()))
         filename = filename.substr(server.getLocation(L)->getPath().size());
     if (filename.size() == 0 || !filename.compare("/"))
-        filename = '/'+ generateRandomString(10) + getContentTypeExt(client.request["media-type"]);
+        filename = '/'+ client.request["filename"];
 
     cout << getRightRoot(server, L) << endl;
     cout << server.getLocation(L)->get_upload_dir() << endl;
@@ -329,12 +336,14 @@ void    PostMethod(t_client& client, Server& server)
     postfile.open(filename,std::ios::binary);
     if (postfile)
     {
-        cout << client.body.find("\r\n") << endl;
-        postfile.write(client.body.c_str(), client.body.find(client.request["boundary"]));
-        GenerateResponse("", "", 201, client);
+        if(client.request["boundary"].size())
+            postfile.write(client.body.c_str(), client.body.find(client.request["boundary"]));
+        else
+            postfile.write(client.body.c_str(), client.body.size());
+        GenerateResponse("", "", 201, client, "");
     }
     else
-        GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 500, client);
+        GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), ".html", 500, client, "");
 }
 
 void    DeleteMethod(t_client& client, Server server)
@@ -346,7 +355,7 @@ void    DeleteMethod(t_client& client, Server server)
     int L = 0;
     //check the path of the Request and if post is allowed
     L = getRightLocation(client.request["path"], server);
-    filename = getRightRoot(server, L) + client.request["path"].substr(server.getLocation(L)->getPath().size());
+    filename = getRightRoot(server, L) + '/' + client.request["path"].substr(server.getLocation(L)->getPath().size());
     dir = opendir(filename.c_str());
     if(dir != NULL)
     {
@@ -354,4 +363,5 @@ void    DeleteMethod(t_client& client, Server server)
             remove((filename +'/'+ pDirent->d_name).c_str());
     }
     remove(filename.c_str());
+    GenerateResponse("", "", 204, client, "");
 }
