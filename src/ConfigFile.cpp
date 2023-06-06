@@ -1,13 +1,11 @@
 #include "../headers/ConfigFile.hpp"
 
 ConfigFile::ConfigFile(){
-    cout << "ConfigFile default constructor called" << endl;
     size = 0;
 }
 
 ConfigFile::ConfigFile(const ConfigFile& other)
 {
-    //cout << "ConfigFile copy constructor called" << endl;
     *this = other;
 }
 
@@ -20,7 +18,6 @@ ConfigFile& ConfigFile::operator=(const ConfigFile& rhs)
 }
 
 ConfigFile::~ConfigFile(){
-    //cout << "ConfigFile destructor called" << endl;
     servers.clear();
 }
 
@@ -54,7 +51,7 @@ void ConfigFile::run_servers(){
     vector<pollfd> fds;
     vector<Client> clients;
     int r;
-    char buffer[1024];
+    char buffer[10024];
     size_t w = 0;
 
     for (size_t i = 0; i < size; i++)
@@ -77,7 +74,7 @@ void ConfigFile::run_servers(){
         if (poll(fds.data(), fds.size(), -1) < 0)
         {
             cout << strerror(errno) << endl;
-            exit(1);
+            exit(0);
         }
         for (size_t i = 0; i < fds.size(); i++)
         {
@@ -98,8 +95,9 @@ void ConfigFile::run_servers(){
                 }
                 if (fds[i].revents & POLLIN && !clients[i - getSocketNum()].response.size())
                 {
-                    bzero(buffer, 1024);
-                    r = read(fds[i].fd, &buffer, 1023);
+                    bzero(buffer, 10024);
+                    r = read(fds[i].fd, &buffer, 10023);
+                    cout << "i am in pollin:" << fds[i].fd << endl;
                     if (!clients[i - getSocketNum()].body.size() && clients[i - getSocketNum()].request.empty())
                     { 
                         if(!parseRequest(clients[i - getSocketNum()], string(buffer, r), servers))
@@ -114,12 +112,16 @@ void ConfigFile::run_servers(){
                 {
                     while (w < clients[i - getSocketNum()].response.size())
                     {
-                        r = write(fds[i].fd, clients[i - getSocketNum()].response.c_str() + w , clients[i - getSocketNum()].response.size() - w);
+                        r = send(fds[i].fd, clients[i - getSocketNum()].response.c_str() + w , clients[i - getSocketNum()].response.size() - w, 0);
+                        cout << "i just read :"  << r << "I am "<< fds[i].fd << endl;
                         if (r != -1)
                             w += r;
                     }
-                    clients[i - getSocketNum()].response.clear();
-                    w = 0;
+                    if(r != -1)
+                    {
+                        clients[i - getSocketNum()].response.clear();
+                        w = 0;
+                    }
                 }
             }
         }

@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <algorithm>
 #include <stdlib.h>
+#include <ctime>
 
 
 using namespace std;
@@ -37,7 +38,7 @@ class ConfigFile{
         size_t    getSocketNum();
 };
 
-int            parseRequest(t_client& client, string buffer, vector<Server*> servers);
+int             parseRequest(t_client& client, string buffer, vector<Server*> servers);
 string          lineToParse(string key, string buffer);
 void            checkRedir(t_client& client, Server server);
 void            makeResponse(t_client& client, Server server);
@@ -46,7 +47,6 @@ void            PostMethod(t_client& client, Server& server);
 void            DeleteMethod(t_client& client, Server server);
 void            GenerateResponse(const string& content, const string& content_type, const int status_code, t_client& client, string redir);
 string          getContentType(const string& path);
-string          getContentTypeExt(const string& path);
 string          generateRandomString(int length);
 void            normalBody(t_client& client, string buffer, Server server);
 void            chunkedToNormal(t_client& client, string buffer, Server server);

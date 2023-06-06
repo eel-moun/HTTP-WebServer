@@ -75,67 +75,6 @@ string getContentType(const string& path)
         return ("application/octet-stream");
 }
 
-string getContentTypeExt(const string& path)
-{
-
-    if (!path.compare("text/html"))
-        return (".html");
-
-    else if (!path.compare("text/css"))
-        return (".css");
-
-    else if (!path.compare("text/javascript"))
-        return (".js");
-
-    else if (!path.compare("image/png"))
-        return (".png");
-
-    else if (!path.compare("image/jpg"))
-        return (".jpg");
-
-    else if (!path.compare("image/jpeg"))
-        return (".jpeg");
-
-    else if (!path.compare("image/gif"))
-        return (".gif");
-
-    else if (!path.compare("image/svg+xml"))
-        return (".svg");
-
-    else if (!path.compare("application/pdf"))
-        return (".pdf");
-
-    else if (!path.compare("application/zip"))
-        return (".zip");
-
-    else if (!path.compare("application/gzip"))
-        return (".gz");
-
-    else if (!path.compare("audio/mpeg"))
-        return (".mp3");
-
-    else if (!path.compare("video/mp4"))
-        return (".mp4");
-
-    else if (!path.compare("video/x-matroska"))
-        return (".mkv");
-
-    else if (!path.compare("application/xml"))
-        return (".xml");
-
-    else if (!path.compare("application/json"))
-        return (".json");
-
-    else if (!path.compare("image/x-icon"))
-        return (".ico");
-
-    else if (!path.compare("text/plain"))
-        return (".txt");
-
-    else
-        return (".");
-}
-
 static const string    getStatusCode(const int status_code)
 {
     switch (status_code)
@@ -154,16 +93,12 @@ static const string    getStatusCode(const int status_code)
             return (" Page Not Found");
         case 405:
             return (" Method Not Allowed");
+        case 408:
+            return (" Request Timeout");
         case 500:
             return (" Internal Server Error");
         case 501:
             return (" Not Implemented");
-        case 502:
-            return (" Bad Gateway");
-        case 503:
-            return (" Service Unavailable");
-        case 504:
-            return (" Gateway Timeout");
         default:
             return (" Unknown Error");
     }
@@ -226,7 +161,6 @@ int  getRightLocation(string req_path, Server server)
         }
             count = 0;
     }
-
     return (j);
 }
 
@@ -244,6 +178,9 @@ string  getRightContent(int fd)
     int r = 1;
     char buffer[1024];
     string content;
+
+    if (fd == -1)
+        return ("");
 
     while (r != 0)
     {
@@ -278,10 +215,10 @@ void    makeResponse(t_client& client, Server server)
         else if (method == "DELETE")
             DeleteMethod(client, server);
         else
-            GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), (string&)"text/html", 501, client, "");
+            GenerateResponse(getRightContent(open(server.getValue("501_error").c_str(), O_RDONLY)), (string&)"text/html", 501, client, "");
     }
     else
-       GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), (string&)"text/html", 405, client, "");
+       GenerateResponse(getRightContent(open(server.getValue("405_error").c_str(), O_RDONLY)), (string&)"text/html", 405, client, "");
 }
 
 void checkRedir(t_client& client, Server server)
@@ -313,7 +250,6 @@ Server getRightServer(vector<Server *> servers, t_client client)
             if (servers[i]->getValue("server_name") == host)
                 return (*servers[i]);
     }
-
-    throw runtime_error("no server found");
+    return *servers[0];
 }
 

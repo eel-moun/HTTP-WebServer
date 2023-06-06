@@ -27,8 +27,8 @@ void chunkedToNormal(t_client& client, string buffer, Server server)
     char buffer1[1024];
     string tmp;
     int r;
-    long len;
-    int timeout = 0;
+    long len = 1;
+    int timeout = time(NULL);
 
     r = 0;
     buffer.erase(0, buffer.find("\r\n\r\n") + 4);
@@ -42,10 +42,9 @@ void chunkedToNormal(t_client& client, string buffer, Server server)
         r = read(client.new_sock_fd, buffer1, 1023);
         if(r == -1)
         {
-            timeout++;
-            if(timeout == 50)
+            if((time(NULL) - timeout) > 10)
             {
-                GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), (string&)"text/html", 408, client, "");
+                GenerateResponse(getRightContent(open(server.getValue("408_error").c_str(), O_RDONLY)), (string&)"text/html", 408, client, "");
                 return;
             }
             r = 0;
@@ -53,9 +52,9 @@ void chunkedToNormal(t_client& client, string buffer, Server server)
         }
         if(r >= 0)
             buffer += string(buffer1,r);
-        timeout = 0;
+        timeout = time(NULL);
         tmp = buffer.substr(0, buffer.find("\r\n"));
-        buffer.erase(0, buffer.find("\r\n") + 2); 
+        buffer.erase(0, buffer.find("\r\n") + 2);
         if(tmp.size())
         {
             len = std::strtol(tmp.c_str(), 0, 16);
@@ -73,7 +72,6 @@ void chunkedToNormal(t_client& client, string buffer, Server server)
             tmp += buffer.substr(0, len);
             buffer.erase(0, len + 2);
         }
-        cout << buffer.size() << endl;
         client.body += tmp;
     }
 }
@@ -105,7 +103,7 @@ void normalBody(t_client& client, string buffer, Server server)
 {
     int r = 0;
     char buffer1[1024];
-    int timeout = 0;
+    int timeout = time(NULL);
     size_t length = strtol(client.request["length"].c_str(),0,10);
     size_t length2 = 0;
 
@@ -115,7 +113,10 @@ void normalBody(t_client& client, string buffer, Server server)
         if(client.request["boundary"].size())
         {
             length2 = buffer.find("\r\n\r\n") + 4;
-            buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+            if(length2 == 3)
+                length2 = 0;
+            else
+                buffer.erase(0, buffer.find("\r\n\r\n") + 4);
         }
     }
     client.body += buffer;
@@ -126,20 +127,19 @@ void normalBody(t_client& client, string buffer, Server server)
         if (r != -1)
         {
             client.body += string(buffer1,r);
-            timeout = 0;
+            timeout = time(NULL);
         }
         else{
-            timeout++;
-            if(timeout == 50)
+            if((time(NULL) - timeout) > 10)
             {
-                GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), (string&)"text/html", 408, client, "");
+                GenerateResponse(getRightContent(open(server.getValue("408_error").c_str(), O_RDONLY)), (string&)"text/html", 408, client, "");
                 return ;
             }
         }
     }
     r = read(client.new_sock_fd, buffer1, 1023);
     if(r > 0 || (client.body.size()+ length2) > length)
-        GenerateResponse(getRightContent(open(server.getValue("root").append("/").append(server.getValue("default_error")).c_str(), O_RDONLY)), (string&)"text/html", 400, client, "");
+        GenerateResponse(getRightContent(open(server.getValue("400_error").c_str(), O_RDONLY)), (string&)"text/html", 400, client, "");
 }
 
 string generateRandomString(int length)

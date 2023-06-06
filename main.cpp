@@ -45,10 +45,7 @@ void parseConfig(ifstream& conf_file, ConfigFile& config)
 		return ;
 
 	if (line.substr(0, 7) != "server " || line.size() != 8)
-	{
-		cout << line << endl;
-		throw invalid_argument("config file syntax error1");
-	}
+		throw invalid_argument("config file syntax error");
 
 	keyValue("server", config);
 	while (getline(conf_file, line, '\n'))
@@ -57,7 +54,7 @@ void parseConfig(ifstream& conf_file, ConfigFile& config)
 		if (line.substr(0, 10) == "location {")
 		{
 			if (line.size() != 10)
-				throw invalid_argument("config file syntax error2");
+				throw invalid_argument("config file syntax error");
 			keyValue("location", config);
 			while (getline(conf_file, line, '\n'))
 			{
@@ -69,7 +66,7 @@ void parseConfig(ifstream& conf_file, ConfigFile& config)
 			continue;
 		}
 		else if (line.substr(0, 8) == "location")
-			throw invalid_argument("config file syntax error3");
+			throw invalid_argument("config file syntax error");
 
 		if (line.substr(0, 1) == "}" && line.size() == 1)
 		{

@@ -2,19 +2,16 @@
 #include "../headers/ServerUtils.hpp"
 
 Server::Server(){
-    cout << "Server default constructor called" << endl;
     size = 0;
 }
 
 Server::Server(const Server& other)
 {
-    cout << "Server copy constructor called" << endl;
     *this = other;
 }
 
 Server& Server::operator=(const Server& rhs)
 {
-    cout << "Server copy assignment operator called" << endl;
     this->size = rhs.size;
     this->valueForKey = rhs.valueForKey;
     this->locations = rhs.locations;
@@ -22,7 +19,6 @@ Server& Server::operator=(const Server& rhs)
 }
 
 Server::~Server(){
-    cout << "Server default destructor called " << endl;
     locations.clear();
 }
 
@@ -78,18 +74,18 @@ void Server::setServ_addr(){
             throw runtime_error("Error while setiing O_NONOBLOCK...");
 
         addr->sin_family = AF_INET;
-        if (!this->getValue("host").compare("localhost")) // possible_error
+        if (!this->getValue("host").compare("localhost"))
             addr->sin_addr.s_addr = INADDR_ANY;
         else
-            addr->sin_addr.s_addr = inet_addr(this->getValue("host").c_str()); // possible_error
+            addr->sin_addr.s_addr = inet_addr(this->getValue("host").c_str());
         cout << listens[i] << endl;
         addr->sin_port = htons(stoi(listens[i]));
 
 
         if (bind(sock_fd[i], reinterpret_cast<struct sockaddr*>(addr), sizeof(struct sockaddr_in)) < 0)
         {
-        cout << strerror(errno) << endl;
-        throw runtime_error("Server::setServ_addr couldn't bind");
+            cout << strerror(errno) << endl;
+            throw runtime_error("Server::setServ_addr couldn't bind");
         }
 
         if (listen(sock_fd[i], 10) < 0)
