@@ -1,4 +1,4 @@
-#include "headers/ConfigFile.hpp"
+#include "../headers/ConfigFile.hpp"
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -70,6 +70,12 @@ int    CGI_response(vector<string> cgi_out, t_client& client, Server server)
     return (GenerateResponse(cgi_out[1], Content_Type, 200, client, ""), 0);
 }
 
+void signal_handl(int sig)
+{
+    (void)sig;
+    exit(1);
+}
+
 int    CGI_handler(t_client& client, Server server, string path_to_serve, int loc_pos)
 {
     int     pipes[2];
@@ -86,6 +92,8 @@ int    CGI_handler(t_client& client, Server server, string path_to_serve, int lo
         return (GenerateResponse(getRightContent(open(server.getValue("500_error").c_str(), O_RDONLY)), "text/html", 500, client, ""), 1);
     else if (pid == 0)
     {
+        signal(SIGALRM, signal_handl);
+        alarm(2);
         if (dup2(pipes[1], STDOUT_FILENO) == -1 || close(pipes[1]) == -1 || close(pipes[0]) == -1)
 	    	return (GenerateResponse(getRightContent(open(server.getValue("500_error").c_str(), O_RDONLY)), "text/html", 500, client, ""), 1);
 
@@ -120,7 +128,8 @@ int    CGI_handler(t_client& client, Server server, string path_to_serve, int lo
             tmpfile.close();
         }
         if (execve(cgiPath.c_str(), args, env) == -1)
-            cout << strerror(errno) << endl;
+            cerr << strerror(errno) << endl;
+        alarm(0);
         exit(1);
     }
     else
@@ -168,12 +177,14 @@ int    GetMethod(t_client& client, Server server)
     //////////////////------ get right index file ------////////////////////
         if (req_path.compare("/"))
         {
-            if (isDirectory(path_to_serve.append(req_path.substr(server.getLocation(loc_pos)->getPath().size()))))
+            if (!server.getValue("autoindex").compare("ON") || !server.getLocation(loc_pos)->getAutoIndex().compare("ON"))
             {
-                if (req_path.at(req_path.size() - 1) != '/')
-                    return (GenerateResponse(getRightContent(open(server.getValue("301_error").c_str(), O_RDONLY)), "text/html", 301, client, ""), 1);
-                else if (!server.getValue("autoindex").compare("ON") || !server.getLocation(loc_pos)->getAutoIndex().compare("ON"))
+                if (isDirectory(path_to_serve.append(req_path.substr(server.getLocation(loc_pos)->getPath().size()))))
+                {
+                    if (req_path.at(req_path.size() - 1) != '/')
+                        return (GenerateResponse(getRightContent(open(server.getValue("301_error").c_str(), O_RDONLY)), "text/html", 301, client, ""), 1);
                     return (GenerateResponse(generateAutoIndex(path_to_serve), ".html", 200, client, ""), 0);
+                }
             }
         }
         test_file = path_to_serve;
@@ -257,13 +268,17 @@ void    PostMethod(t_client& client, Server& server)
 void    DeleteMethod(t_client& client, Server server)
 {
     string filename;
+    string client_path;
     std::ofstream postfile;
     struct dirent *pDirent;
     DIR *dir;
     int L = 0;
-    //check the path of the Request and if post is allowed
+
     L = getRightLocation(client.request["path"], server);
-    filename = getRightRoot(server, L) + '/' + client.request["path"].substr(server.getLocation(L)->getPath().size());
+    client_path = client.request["path"].substr(server.getLocation(L)->getPath().size());
+    while(client_path.find("..") != string::npos)
+        client_path.erase(client_path.find(".."), 2);
+    filename = getRightRoot(server, L) + '/' + client_path;
     dir = opendir(filename.c_str());
     if(dir != NULL)
     {

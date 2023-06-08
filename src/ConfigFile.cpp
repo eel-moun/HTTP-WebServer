@@ -52,11 +52,11 @@ void ConfigFile::run_servers(){
     vector<Client> clients;
     int r;
     char buffer[10024];
-    size_t w = 0;
 
     for (size_t i = 0; i < size; i++)
     {
         getServer(i)->openServer();
+
         for (size_t j = 0; j < getServer(i)->get_sock_v().size(); j++)
         {
             pollfd _fd;
@@ -69,58 +69,69 @@ void ConfigFile::run_servers(){
     }
     while (true)
     {
+        size_t socket_num;
         fds.shrink_to_fit();
         clients.shrink_to_fit();
-        if (poll(fds.data(), fds.size(), -1) < 0)
+        if (poll(&fds[0], fds.size(), -1) < 0)
         {
             cout << strerror(errno) << endl;
-            exit(0);
+            exit(1);
         }
         for (size_t i = 0; i < fds.size(); i++)
         {
-            if ((fds[i].revents & POLLIN) && i < getSocketNum())
+            socket_num = getSocketNum();
+            if ((fds[i].revents & POLLIN) && i < socket_num)
             {
                 Accept(fds, clients, i);
             }
             else
             {
+                if(i >= socket_num)
+                    if(time(NULL) - clients[i - socket_num].timeout > 10)
+                        GenerateResponse(getRightContent(open(getRightServer(servers, clients[i - socket_num]).getValue("408_error").c_str(), O_RDONLY)), (string&)"text/html", 408, clients[i - socket_num], "");
                 if (fds[i].revents & POLLHUP)
                 {
-                    cout << "client " << fds[i].fd << " disconnected" << endl;
-                    close(fds[i].fd);
-                    fds.erase(fds.begin() + i);
-                    clients.erase(clients.begin() + (i - getSocketNum()));
+                    disconect(fds, clients, i, socket_num);
                     i--;
                     continue;
                 }
-                if (fds[i].revents & POLLIN && !clients[i - getSocketNum()].response.size())
+                if (fds[i].revents & POLLIN && !clients[i - socket_num].response.size())
                 {
+                    clients[i - socket_num].timeout = time(NULL);
                     bzero(buffer, 10024);
                     r = read(fds[i].fd, &buffer, 10023);
-                    cout << "i am in pollin:" << fds[i].fd << endl;
-                    if (!clients[i - getSocketNum()].body.size() && clients[i - getSocketNum()].request.empty())
-                    { 
-                        if(!parseRequest(clients[i - getSocketNum()], string(buffer, r), servers))
-                            checkRedir(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
+                    if(r == -1 || r == 0)
+                    {
+                            disconect(fds, clients, i, socket_num);
+                            i--;
+                            continue;
                     }
-                    if (!clients[i - getSocketNum()].response.size())
-                        fillBody(clients[i - getSocketNum()], string(buffer,r), getRightServer(servers, clients[i - getSocketNum()]));
-                    if (!clients[i - getSocketNum()].response.size())
-                        makeResponse(clients[i - getSocketNum()], getRightServer(servers, clients[i - getSocketNum()]));
+                    if (!clients[i - socket_num].header_removed)
+                    {
+                        if(!parseRequest(clients[i - socket_num], string(buffer, r), servers))
+                            checkRedir(clients[i - socket_num], getRightServer(servers, clients[i - socket_num]));
+                    }
+                    if (!clients[i - socket_num].response.size() && !clients[i - socket_num].finished_reading)
+                        fillBody(clients[i - socket_num], string(buffer,r), getRightServer(servers, clients[i - socket_num]));
+                    if (!clients[i - socket_num].response.size() && clients[i - socket_num].finished_reading)
+                    {
+                        if(clients[i - socket_num].body.size() > (size_t)strtol(getRightServer(servers, clients[i - socket_num]).getValue("max_size").c_str(), 0, 10))
+                            GenerateResponse(getRightContent(open(getRightServer(servers, clients[i - socket_num]).getValue("400_error").c_str(), O_RDONLY)), (string&)"text/html", 400, clients[i - socket_num], "");
+                        else
+                            makeResponse(clients[i - socket_num], getRightServer(servers, clients[i - socket_num]));
+                    }
                 }
-                    if (fds[i].revents & POLLOUT && clients[i - getSocketNum()].response.size())
+                if (fds[i].revents & POLLOUT && clients[i - socket_num].response.size())
                 {
-                    while (w < clients[i - getSocketNum()].response.size())
+                    clients[i - socket_num].timeout = time(NULL);
+                    r = write(fds[i].fd, clients[i - socket_num].response.c_str() + clients[i - socket_num].w , clients[i - socket_num].response.size() - clients[i - socket_num].w);
+                    if (r > 0)
+                        clients[i - socket_num].w += r;
+                    if (r == 0 || r == -1 || clients[i - socket_num].w == clients[i - socket_num].response.size())
                     {
-                        r = send(fds[i].fd, clients[i - getSocketNum()].response.c_str() + w , clients[i - getSocketNum()].response.size() - w, 0);
-                        cout << "i just read :"  << r << "I am "<< fds[i].fd << endl;
-                        if (r != -1)
-                            w += r;
-                    }
-                    if(r != -1)
-                    {
-                        clients[i - getSocketNum()].response.clear();
-                        w = 0;
+                        disconect(fds, clients, i, socket_num);
+                        i--;
+                        continue;
                     }
                 }
             }

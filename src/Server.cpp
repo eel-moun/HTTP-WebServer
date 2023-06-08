@@ -24,8 +24,10 @@ Server::~Server(){
 
 void Server::setValue(string key, string value)
 {
-    if(valueForKey.find(key) != valueForKey.end())
+    if (valueForKey.find(key) != valueForKey.end())
         throw invalid_argument("Server::setValue key already initialised");
+    else if (!key.compare("max_size") && !is_number(value))
+            throw invalid_argument("max need to all num");
     valueForKey.insert(pair<string, string>(key, value));
 }
 
@@ -72,15 +74,13 @@ void Server::setServ_addr(){
         
         if (fcntl(sock_fd[i], F_SETFL, O_NONBLOCK) < 0)
             throw runtime_error("Error while setiing O_NONOBLOCK...");
-
+        // bzero((char *) addr, sizeof(addr));
         addr->sin_family = AF_INET;
         if (!this->getValue("host").compare("localhost"))
             addr->sin_addr.s_addr = INADDR_ANY;
         else
             addr->sin_addr.s_addr = inet_addr(this->getValue("host").c_str());
-        cout << listens[i] << endl;
         addr->sin_port = htons(stoi(listens[i]));
-
 
         if (bind(sock_fd[i], reinterpret_cast<struct sockaddr*>(addr), sizeof(struct sockaddr_in)) < 0)
         {
@@ -104,10 +104,17 @@ void    Server::set_listens(string value)
     string token;
 
     if (this->listens.size())
-        throw invalid_argument("Location::set_return key already initialised");
+        throw invalid_argument("Location::set_listens key already initialised");
     stringstream ss(value);
     while (getline(ss, token, ' '))
+    {
+        if (!is_number(token))
+            throw invalid_argument("listen need to all num");
+        for(size_t i = 0; i < listens.size(); i++)
+            if(!listens[i].compare(token))
+                throw invalid_argument("same port set twice");
         this->listens.push_back(token);
+    }
 }
 
 vector<string>  Server::get_listens()

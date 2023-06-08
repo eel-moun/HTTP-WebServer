@@ -44,4 +44,6 @@ class Server{
         vector<int> get_sock_v();
 };
 
+bool    is_number(const string& s);
+
 #endif

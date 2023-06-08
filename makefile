@@ -1,6 +1,6 @@
 SRC = main.cpp src/ConfigFile.cpp src/Location.cpp src/Server.cpp src/parseConfig.cpp\
-		src/parseConfigUtils.cpp src/serverUtils.cpp src/RequestUtils.cpp setRequest.cpp\
-		sendResponse.cpp methods.cpp
+		src/parseConfigUtils.cpp src/serverUtils.cpp src/RequestUtils.cpp src/setRequest.cpp\
+		src/sendResponse.cpp src/methods.cpp
 
 
 HEADERS = headers/ConfigFile.hpp headers/Location.hpp headers/Server.hpp headers/parseConfig.hpp headers/ServerUtils.hpp

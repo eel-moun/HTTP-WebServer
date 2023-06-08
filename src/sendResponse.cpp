@@ -1,4 +1,4 @@
-#include "headers/ConfigFile.hpp"
+#include "../headers/ConfigFile.hpp"
 
 /*
 There are many different types of errors that can occur when handling a GET request. Here are some examples:
@@ -189,7 +189,7 @@ string  getRightContent(int fd)
         if (r >= 0)
             content.append(buffer, r);
     }
-    return (content);
+    return (close(fd), content);
 }
 
 int checkIfMethodAllowed(vector<string> allowedMethod, string method)

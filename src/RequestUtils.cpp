@@ -24,55 +24,58 @@ string lineToParse(string key, string buffer){
 
 void chunkedToNormal(t_client& client, string buffer, Server server)
 {
-    char buffer1[1024];
     string tmp;
-    int r;
-    long len = 1;
-    int timeout = time(NULL);
-
-    r = 0;
-    buffer.erase(0, buffer.find("\r\n\r\n") + 4);
-    if(client.request["boundary"].size())
-        buffer.erase(0, buffer.find("\r\n\r\n") + 4);
-    while (r != -1 && buffer.find("0\r\n\r\n") != 0 && len != 0)
+    (void) server;
+    if(!client.header_removed)
     {
-        if(buffer.find("\r\n") == 0)
-            buffer.erase(0,2);
-        bzero(buffer1,1024);
-        r = read(client.new_sock_fd, buffer1, 1023);
-        if(r == -1)
+        buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+        if(client.request["boundary"].size())
+            buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+        client.header_removed = true;
+    }
+    client.buffer += buffer;
+    while (client.buffer.size())
+    {
+        if(client.buffer.find("\r\n") == 0)
+            client.buffer.erase(0,2);
+        if(!client.chunked_len_set && client.buffer.size())
         {
-            if((time(NULL) - timeout) > 10)
+            if(client.buffer.find("\r\n") != string::npos)
             {
-                GenerateResponse(getRightContent(open(server.getValue("408_error").c_str(), O_RDONLY)), (string&)"text/html", 408, client, "");
-                return;
+                tmp = client.buffer.substr(0, client.buffer.find("\r\n"));
+                client.chunked_len = std::strtol(tmp.c_str(), 0, 16);
+                client.chunked_len_set = true;
+                client.total_read = 0;
+                client.buffer.erase(0, client.buffer.find("\r\n") + 2);
             }
-            r = 0;
-            continue;
+            else
+                return ;
+            if(client.chunked_len == 0)
+            {
+                client.finished_reading = true;
+                return ;
+            }
         }
-        if(r >= 0)
-            buffer += string(buffer1,r);
-        timeout = time(NULL);
-        tmp = buffer.substr(0, buffer.find("\r\n"));
-        buffer.erase(0, buffer.find("\r\n") + 2);
-        if(tmp.size())
+        if(client.total_read < client.chunked_len && client.chunked_len_set)
         {
-            len = std::strtol(tmp.c_str(), 0, 16);
-            tmp.clear();
+            if(client.buffer.size() < (client.chunked_len - client.total_read))
+            {
+                client.body += client.buffer;
+                client.total_read += client.buffer.size();
+                client.buffer.clear();
+            }
+            else{
+                if(client.buffer.find("\r\n") != string::npos)
+                {
+                    client.body += client.buffer.substr(0, (client.chunked_len - client.total_read));
+                    client.chunked_len_set = false;
+                    client.buffer.erase(0, (client.chunked_len - client.total_read) + 2);
+                    client.total_read += (client.chunked_len - client.total_read);
+                }
+                else
+                    return ;
+            }
         }
-        while(buffer.size() < (size_t)len)
-        {
-            bzero(buffer1,1024);
-            r = read(client.new_sock_fd, buffer1, 1023);
-            if(r >= 0)
-                buffer += string(buffer1,r);
-        }
-        while(tmp.size() < (size_t)len)
-        {
-            tmp += buffer.substr(0, len);
-            buffer.erase(0, len + 2);
-        }
-        client.body += tmp;
     }
 }
 
@@ -101,45 +104,24 @@ size_t getLocationIndex(string req_path, Server server)
 
 void normalBody(t_client& client, string buffer, Server server)
 {
-    int r = 0;
-    char buffer1[1024];
-    int timeout = time(NULL);
     size_t length = strtol(client.request["length"].c_str(),0,10);
-    size_t length2 = 0;
 
-    if(client.body.size() == 0)
+    if(!client.header_removed)
     {
         buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+        client.header_removed = true;
         if(client.request["boundary"].size())
         {
-            length2 = buffer.find("\r\n\r\n") + 4;
-            if(length2 == 3)
-                length2 = 0;
-            else
-                buffer.erase(0, buffer.find("\r\n\r\n") + 4);
+            client.total_read += buffer.find("\r\n\r\n") + 4;
+            buffer.erase(0, buffer.find("\r\n\r\n") + 4);
         }
     }
+    client.total_read += buffer.size();
     client.body += buffer;
-    while((client.body.size()+ length2) < length)
-    {
-        bzero(buffer1,1024);
-        r = read(client.new_sock_fd, buffer1, 1023);
-        if (r != -1)
-        {
-            client.body += string(buffer1,r);
-            timeout = time(NULL);
-        }
-        else{
-            if((time(NULL) - timeout) > 10)
-            {
-                GenerateResponse(getRightContent(open(server.getValue("408_error").c_str(), O_RDONLY)), (string&)"text/html", 408, client, "");
-                return ;
-            }
-        }
-    }
-    r = read(client.new_sock_fd, buffer1, 1023);
-    if(r > 0 || (client.body.size()+ length2) > length)
+    if(client.total_read > length)
         GenerateResponse(getRightContent(open(server.getValue("400_error").c_str(), O_RDONLY)), (string&)"text/html", 400, client, "");
+    else if(client.total_read == length)
+        client.finished_reading = true;
 }
 
 string generateRandomString(int length)
@@ -159,4 +141,6 @@ void fillBody(t_client& client, string buffer, Server server)
         normalBody(client, buffer, server);
     else if(!client.request["Transfer-Encoding"].compare("chunked"))
         chunkedToNormal(client, buffer, server);
+    else
+        client.finished_reading = true;
 }
