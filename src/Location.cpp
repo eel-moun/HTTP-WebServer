@@ -118,22 +118,10 @@ vector<string> Location::get_return()
     return (this->_return);
 }
 
-void    Location::set_cgi_path(string path)
-{
-    if (this->cgi_ext.size())
-        throw invalid_argument("Location::set_cgi_path key already initialised");
-    this->cgi_path = path;
-}
-
-string  Location::get_cgi_path()
-{
-    return (this->cgi_path);
-}
-
 void    Location::set_cgi_ext(string ext)
 {
     if (this->cgi_ext.size())
-        throw invalid_argument("Location::set_cgi_ext key already initialised");
+        throw invalid_argument("Location::set_cgi_path key already initialised");
     this->cgi_ext = ext;
 }
 
