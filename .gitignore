@@ -1,0 +1,12 @@
+.vscode
+.vscode/launch.json
+.vscode/settings.json
+test.cpp
+test1.cpp
+websrv.dSYM
+websrv
+obj/*
+roadmap
+script.py
+default/nginx.conf
+./mok
